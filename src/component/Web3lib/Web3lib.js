@@ -9,7 +9,11 @@ export default class Web3lib {
   }
 
 
-  // initialize httpProvider
+  /**
+   * Initialize Web3 Provider
+   * @param {function} callback
+   */
+
   _initHttpProvider(callback) {
     window.addEventListener('load', () => {
       if (typeof web3 !== 'undefined' && !this.web3Location) {
@@ -28,7 +32,11 @@ export default class Web3lib {
   }
 
 
-  // get HTTP Provider
+  /**
+   * Current currently-used Provider
+   * @return {object} web3 provider
+   */
+
   _getHttpProvider() {
     if (!this.web3) {
       console.error('No Http Provider Available.')
@@ -37,6 +45,15 @@ export default class Web3lib {
     return this.web3
   }
 
+
+  /**
+   * Load a contract prior to use
+   * @param {object} contractOpt
+   *                 - name : string, can be named anything
+   *                 - abi : ABI JSON
+   *                 - addr : address
+   * @return {object} Contract Object
+   */
 
   _addContract(contractOpt) {
 
@@ -59,6 +76,12 @@ export default class Web3lib {
 
   }
 
+
+  /**
+   * Get contract by name
+   * @param {string} name - contract name, chosen during _addContract
+   * @return {object} Contract Object
+   */
 
   _getContract(name) {
     return this.contract[name]

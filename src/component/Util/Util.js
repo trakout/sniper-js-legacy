@@ -6,14 +6,38 @@ import * as _ from 'lodash'
 
 let BN = utils.BN
 
+
 export default class Util {
+
+
+  /**
+   * Check if string is hex
+   * @param {string} - string to check
+   * @return {boolean}
+   */
+
   static isHex(hex) {
     return utils.isHexStrict(hex)
   }
 
+
+  /**
+   * convert BigNumber to web3 1.0's BN
+   * @param {BigNumber} - BigNumber object to convert
+   * @return {BN}
+   */
+
   static bigNumberToBN(num) {
     return new BN(num.toString(), 10)
   }
+
+
+  /**
+   * check to be sure account is available (eg. before signing)
+   * @param {string} - Hex address
+   * @param {object} - web 3 instance
+   * @return {Promise} - resolves a boolean, always
+   */
 
   static isSenderAddressAsync(addr, w3) {
     return new Promise(async (resolve, reject) => {
@@ -29,6 +53,13 @@ export default class Util {
     })
   }
 
+
+  /**
+   * get hash of order object
+   * @param {object} - Order
+   * @return {string} - Hash of order
+   */
+
   static getOrderHash(order) {
     const orderParts = [
       { value: order.exchangeAddress, type: 'address' },
@@ -37,7 +68,6 @@ export default class Util {
       { value: this.bigNumberToBN(order.salt), type: 'uint256' },
       { value: order.makerTokenAddress, type: 'address' },
       { value: order.takerTokenAddress, type: 'address' },
-      // { value: order.feeRecipient, type: 'address' }, TODO: remove
       {
           value: this.bigNumberToBN(order.makerTokenAmount),
           type: 'uint256',
@@ -46,32 +76,21 @@ export default class Util {
           value: this.bigNumberToBN(order.takerTokenAmount),
           type: 'uint256',
       },
-      // { TODO: remove
-      //     value: this.bigNumberToBN(order.makerFee),
-      //     type: 'uint256',
-      // },
-      // { TODO: remove?
-      //     value: this.bigNumberToBN(order.takerFee),
-      //     type: 'uint256',
-      // },
       {
           value: this.bigNumberToBN(order.expirationTimestampInSec),
           type: 'uint256',
       }
     ]
-    console.log('getOrderHash:', orderParts)
-
-    // const types = orderParts.map(o => o.type)
-    // const values = orderParts.map(o => o.value)
-
-    // const hashBuff = ethABI.soliditySHA3(types, values)
-    // const hashHex = ethUtil.bufferToHex(hashBuff)
-
-    const hashHex = utils.soliditySha3(...orderParts)
-
-    return hashHex
-
+    // console.log('getOrderHash:', orderParts)
+    return utils.soliditySha3(...orderParts)
   } // getOrderHash
+
+
+  /**
+   * Parse signature to VRS convention
+   * @param {string} - Signature Hex to parse
+   * @return {object}
+   */
 
   static parseSigHexToVRS(sigHex) {
     const sigBuf = toBuffer(sigHex)
@@ -87,6 +106,13 @@ export default class Util {
     }
   }
 
+
+  /**
+   * Parse signature to RSV convention
+   * @param {string} - Signature hex to parse
+   * @return {object}
+   */
+
   static parseSigHexToRSV(sigHex) {
     const { v, r, s } = fromRpcSig(sigHex)
     return {
@@ -95,6 +121,15 @@ export default class Util {
       s: bufferToHex(s),
     }
   }
+
+
+  /**
+   * Confirm order was signed the correct address
+   * @param {string} - Order hash
+   * @param {string} - Address claiming to have signed the order
+   * @param {object} - ecsignature VRS 
+   * @return {boolean}
+   */
 
   static verifySignature(data, signerAddr, ecSig) {
     const dataBuff = toBuffer(data)
