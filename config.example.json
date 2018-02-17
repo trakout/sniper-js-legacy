@@ -1,0 +1,12 @@
+{
+  "addr": {
+    "null": "0x0000000000000000000000000000000000000000",
+    "exchange": "0xEXCHANGE_ADDR",
+    "weth": "0xWETH",
+    "sniper_token": "0xSNIPER_TOKEN"
+  },
+  "abi": {
+    "dex": "path_to_dex.json"
+  },
+  "msg_prefix": "I agree to sign the following Sniper Exchange order. \n\n[hash]: "
+}
