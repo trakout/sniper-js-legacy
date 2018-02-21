@@ -1,3 +1,4 @@
+var CFG               = require('../config').prod;
 var path              = require('path');
 var webpack           = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -60,9 +61,7 @@ module.exports = {
       'process.env': {
         NODE_ENV: JSON.stringify('production')
       }
-    }),
-    new HtmlWebpackPlugin({
-      template: './src/index.pug'
+      // 'CFG': JSON.stringify(CFG)
     }),
     new webpack.optimize.CommonsChunkPlugin('common.js'),
     new webpack.optimize.DedupePlugin(),

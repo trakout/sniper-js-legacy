@@ -2,8 +2,8 @@ import { utils } from 'web3'
 import { BigNumber } from 'bignumber.js'
 import * as ethABI from 'ethereumjs-abi'
 import { toBuffer, bufferToHex, fromRpcSig, ecrecover, pubToAddress, hashPersonalMessage, toChecksumAddress } from 'ethereumjs-util'
-import * as _ from 'lodash'
 
+const WETH = CFG.addr.weth
 let BN = utils.BN
 
 
@@ -33,6 +33,71 @@ export default class Util {
 
 
   /**
+   * given pair, get quote
+   * @param {string} p - pair
+   * @return {string} pair's quote
+   */
+
+   static getQuoteFromPair(p) {
+     return p.substr(p.indexOf(':') + 1, p.length - 1)
+   }
+
+
+   /**
+    * given pair, return pair with checksum'd address
+    * @param {string} p - pair
+    * @return {string} pair with checksum'd address
+    */
+
+   static checksumPair(p) {
+     const b = p.substr(0, p.indexOf(':') + 1)
+     const q = toChecksumAddress(p.substr(p.indexOf(':') + 1, p.length - 1))
+     return b + q
+   }
+
+
+  /**
+   * given order, get quote
+   * @param {object} o - complete order
+   * @return {string} pair's quote
+   */
+
+  static getQuoteFromOrder(o) {
+    let quote = null
+    if (o.base == 'ETH') {
+      if (o.makerTokenAddress !== WETH) {
+        quote = o.makerTokenAddress
+      }
+      if (o.takerTokenAddress !== WETH) {
+        quote = o.takerTokenAddress
+      }
+      if (!quote) {
+        console.error('Could not find valid quote for pair (base:quote)')
+      }
+    } else {
+      console.error('Only ETH base currently supported')
+    }
+    if (
+      utils.isAddress(o.makerTokenAddress) &&
+      utils.isAddress(o.takerTokenAddress)
+    ) {
+      if (toChecksumAddress(o.makerTokenAddress) == toChecksumAddress(o.takerTokenAddress)) {
+        // not sure if this will ever happen, but..
+        console.error('Util.getQuote: identical maker & taker token')
+        quote = null
+      }
+    }
+
+    // checksum
+    if (utils.isAddress(quote)) {
+      quote = toChecksumAddress(quote)
+    }
+
+    return quote
+  }
+
+
+  /**
    * check to be sure account is available (eg. before signing)
    * @param {string} - Hex address
    * @param {object} - web 3 instance
@@ -45,7 +110,7 @@ export default class Util {
         reject('isSenderAddressAsync: invalid address')
       }
 
-      if ((await w3.eth.getAccounts()).includes(addr)) {
+      if ((await w3._getAccounts()).includes(addr)) {
         resolve(true)
       } else {
         resolve(false)
@@ -81,7 +146,6 @@ export default class Util {
           type: 'uint256',
       }
     ]
-    // console.log('getOrderHash:', orderParts)
     return utils.soliditySha3(...orderParts)
   } // getOrderHash
 
@@ -98,7 +162,6 @@ export default class Util {
     if (v < 27) v+= 27
     const r = sigBuf.slice(1, 33)
     const s = sigBuf.slice(33, 65)
-
     return {
       v: v,
       r: bufferToHex(r),
@@ -127,7 +190,7 @@ export default class Util {
    * Confirm order was signed the correct address
    * @param {string} - Order hash
    * @param {string} - Address claiming to have signed the order
-   * @param {object} - ecsignature VRS 
+   * @param {object} - ecsignature VRS
    * @return {boolean}
    */
 

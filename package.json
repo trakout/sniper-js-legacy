@@ -9,15 +9,17 @@
   },
   "scripts": {
     "start": "webpack-dashboard -- webpack-dev-server --config ./config/webpack.config.js --port 9000 --inline",
-    "build": "rimraf dist && NODE_ENV=production webpack -p --config ./config/webpack.production.config.js"
+    "build": "rimraf dist && NODE_ENV=production webpack -p --config ./config/webpack.production.config.js",
+    "test": "node ./node_modules/.bin/mocha"
   },
   "dependencies": {
     "bignumber.js": "6.0.0",
-    "chai-bignumber": "^2.0.2",
+    "chai": "^4.1.2",
+    "chai-bignumber": "2.0.2",
     "dirty-chai": "2.0.1",
-    "ethereumjs-abi": "^0.6.5",
-    "ethereumjs-util": "^5.1.3",
-    "lodash": "^4.17.5",
+    "ethereumjs-abi": "0.6.5",
+    "ethereumjs-util": "5.1.4",
+    "firebase": "^4.10.0",
     "web3": "1.0.0-beta.27"
   },
   "devDependencies": {
@@ -33,6 +35,7 @@
     "gulp": "^3.9.1",
     "html-webpack-plugin": "^2.16.1",
     "json-loader": "^0.5.4",
+    "mocha": "^5.0.1",
     "node-libs-browser": "^0.5.2",
     "pug": "2.0.0-alpha7",
     "pug-html-loader": "^1.0.5",
@@ -41,6 +44,7 @@
     "style-loader": "^0.12.3",
     "stylus": "^0.54.5",
     "stylus-loader": "^2.0.0",
+    "truffle": "^4.0.6",
     "webpack": "^1.10.0",
     "webpack-dashboard": "^0.1.8",
     "webpack-dev-server": "^1.10.1"

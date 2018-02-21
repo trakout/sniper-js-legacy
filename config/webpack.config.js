@@ -1,3 +1,4 @@
+var CFG               = require('../config').dev;
 var path              = require('path');
 var webpack           = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -67,6 +68,9 @@ module.exports = {
     // new webpack.HotModuleReplacementPlugin(),
     new HtmlWebpackPlugin({
       template: './src/index.pug'
+    }),
+    new webpack.DefinePlugin({
+      'CFG': JSON.stringify(CFG)
     }),
     new DashboardPlugin()
   ],

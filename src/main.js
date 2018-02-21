@@ -1,14 +1,19 @@
 'use strict'
 
-import * as cfg from '../config'
 import { abi as dexAbi } from '../../build/contracts/SniperExchange'
 
 import { BigNumber } from 'bignumber.js'
 import Assert from './component/Assert'
 import Util from './component/Util'
 import Web3lib from './component/Web3lib'
-import { toBuffer, bufferToHex, hashPersonalMessage } from 'ethereumjs-util'
+import Firebase from './component/Firebase'
+import {
+  toBuffer,
+  bufferToHex,
+  hashPersonalMessage
+} from 'ethereumjs-util'
 
+const cfg = CFG
 const MAX_DIGITS_IN_UNSIGNED_256_INT = 78
 const UNLIMITED_ALLOWANCE_IN_BASE_UNITS = new BigNumber(2).pow(256).minus(1)
 const NULL_ADDR = cfg.addr.null
@@ -20,8 +25,9 @@ export default class Sniper {
     if (err) return
 
     this.w3           = null
-    this.provider     = null
+    this.provider     = opts.provider
     this.webworker    = opts.webworker ? opts.webworker : false
+    this.db           = new Firebase()
   }
 
 
@@ -32,23 +38,25 @@ export default class Sniper {
 
   async init() {
     return new Promise((resolve, reject) => {
-      this.w3 = new Web3lib()
+      this.w3 = new Web3lib(this.provider)
 
-      this.w3._initHttpProvider((web3Provider) => {
-        this.provider = web3Provider
-        this.dex = this.w3._addContract({
-          name: 'dex',
-          addr: cfg.addr.dex,
-          abi: dexAbi
-        })
-        resolve()
+      this.dex = this.w3._addContract({
+        name: 'dex',
+        addr: cfg.addr.dex,
+        abi: dexAbi
       })
+
+      resolve()
 
     }) // promise
   } // init
 
   _checkOptions(opts) {
     let error = false
+    if (!opts.provider) {
+      console.error('Missing provider option')
+      error = true
+    }
     if (!opts.exchangeAddr) {
       console.warn('Missing exchangeAddr option')
     }
@@ -56,9 +64,14 @@ export default class Sniper {
   } // _checkOptions
 
 
-  // changeProvider(provider) {
-  //
-  // }
+  changeProvider(provider) {
+    if (this.w3 && provider) {
+      this.provider = provider
+      this.w3._setProvider(this.provider)
+    } else {
+      console.error('Could not change provider')
+    }
+  }
 
 
   /**
@@ -161,7 +174,7 @@ export default class Sniper {
       if (!Util.isHex(orderHash)) {
         reject('signOrderHashAsync: Invalid orderHash')
       }
-      if (!(await Util.isSenderAddressAsync(signerAddr, this.provider))) {
+      if (!(await Util.isSenderAddressAsync(signerAddr, this.w3))) {
         reject('signOrderHashAsync: Invalid signerAddr')
       }
 
@@ -172,9 +185,19 @@ export default class Sniper {
         msgHashHex = bufferToHex(msgHashBuff);
       }
 
-      const sig = await this.provider.eth.personal.sign(msgHashHex, signerAddr)
+      const sig = await this.w3._sign(cfg.msg_prefix + msgHashHex, signerAddr)
       resolve(sig)
     })
+  }
+
+  /**
+   * Externally-available order hashing
+   * @param {object} order - complete order data
+   * @return {string}
+   */
+
+  getOrderHash(order) {
+    return Util.getOrderHash(order)
   }
 
 
@@ -199,32 +222,66 @@ export default class Sniper {
     ) {
       return false
     }
-
-    return Util.verifySignature(data, signerAddr, ecSig)
+    return Util.verifySignature(cfg.msg_prefix + data, signerAddr, ecSig)
   }
 
 
-  fillOrder() {
+  submitOrder(order) {
+    this.db._submitOrderInsecure(order)
+  }
 
+
+  fillOrder(order) {
+
+  }
+
+
+  async getOrderBook(pair) {
+    return new Promise (async (resolve, reject) => {
+      const result = await this.db._getOrderBook(pair)
+      resolve(result)
+    })
+  }
+
+  listenOrderBook(pair, cb) {
+    this.db._listenOrderBook(pair, cb)
   }
 }
 
 
-let snpr = new Sniper({})
-snpr.init().then((contract) => {
-  // console.log(contract)
-  snpr.createOrderAsync(
-    false,
-    '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mAddr
-    null, // tAddr
-    '0x6089982faab51b5758974cf6a502d15ca300a4eb', // mTokenAddr
-    '0x6089982faab51b5758974cf6a502d15ca300a4eb', // tTokenAddr
-    new BigNumber(1), // makerTokenAmt
-    new BigNumber(1), // takerTokenAmt
-    360000, // expiry length
-    'ETH'
-  ).then((order) => {
-    console.log('done!')
-    console.log(order)
-  })
+// test
+let snpr = new Sniper({
+  provider: web3
 })
+
+// let count = 0;
+// let onOrder = (orders) => {
+//   console.log(count, orders)
+//   count++
+// }
+//
+// snpr.listenOrderBook('ETH:0x6089982faab51b5758974cf6a502d15ca300a4eb', onOrder)
+//
+//
+// snpr.init().then(() => {
+//
+//   snpr.createOrderAsync(
+//     false,
+//     '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mAddr
+//     null, // tAddr
+//     '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mTokenAddr
+//     '0x6089982faab51b5758974cf6a502d15ca300a4eb', // tTokenAddr
+//     new BigNumber(1), // makerTokenAmt
+//     new BigNumber(1), // takerTokenAmt
+//     360000, // expiry length
+//     'ETH'
+//   ).then((order) => {
+//     // console.log(order)
+//     let hash = snpr.getOrderHash(order)
+//     console.log('verification test:', snpr.verifySignature(hash, order.maker, order.sig))
+//     return order
+//   }).then((order) => {
+//     snpr.submitOrder(order)
+//   })
+//
+// })

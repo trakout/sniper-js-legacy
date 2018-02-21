@@ -2,33 +2,24 @@ import Web3 from 'web3'
 
 
 export default class Web3lib {
-  constructor(providerNet) {
-    this.web3 = null
-    this.web3HttpOrWS = providerNet ? providerNet : null
+  constructor(provider) {
     this.contract = {}
+    this.web3 = new Web3()
+    if (provider) this._setProvider(provider)
   }
 
 
   /**
-   * Initialize Web3 Provider
-   * @param {function} callback
+   * Set web3 provider
+   * @param {string} provider - Provider URL
    */
 
-  _initHttpProvider(callback) {
-    window.addEventListener('load', () => {
-      if (typeof web3 !== 'undefined' && !this.web3Location) {
-        // Use the metamask/mist provider.
-        // eslint-disable-next-line
-        this.web3 = new Web3(web3.currentProvider)
-        console.info('web3 provider detected')
-      } else if (this.web3Location) {
-        console.info('using specified web3 provider')
-        this.web3 = new Web3(new Web3.providers.HttpProvider(this.web3Location))
-      } else {
-        console.error('Could not find injected web3')
-      }
-      callback(this.web3)
-    })
+  _setProvider(provider) {
+    if (typeof provider != 'string' && provider.currentProvider) {
+      this.web3.setProvider(provider.currentProvider)
+    } else {
+      this.web3.setProvider(provider)
+    }
   }
 
 
@@ -37,12 +28,8 @@ export default class Web3lib {
    * @return {object} web3 provider
    */
 
-  _getHttpProvider() {
-    if (!this.web3) {
-      console.error('No Http Provider Available.')
-      return
-    }
-    return this.web3
+  _getProvider() {
+    return this.web3.currentProvider
   }
 
 
@@ -85,6 +72,22 @@ export default class Web3lib {
 
   _getContract(name) {
     return this.contract[name]
+  }
+
+
+  async _getAccounts() {
+    return new Promise( async (resolve, reject) => {
+      const accounts = await this.web3.eth.getAccounts()
+      resolve(accounts)
+    })
+  }
+
+
+  async _sign(msg, addr) {
+    return new Promise( async (resolve, reject) => {
+      const sig = await this.web3.eth.personal.sign(msg, addr)
+      resolve(sig)
+    })
   }
 
 }
