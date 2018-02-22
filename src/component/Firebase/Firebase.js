@@ -62,7 +62,7 @@ export default class Firebase {
    * @return {Promise}
    */
 
-  async _submitOrder() {
+  async _submitOrder(o) {
     return new Promise( async (resolve, reject) => {
       let quote = Util.getQuoteFromOrder(o)
 
@@ -81,7 +81,14 @@ export default class Firebase {
         tn:  o.takerTokenAmount.toString(),
       }
 
-      // TODO: post to REST
+      fetch(cfg.fb.api + 'ordersubmit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(order)
+      })
+
     }) // Promise
   }
 

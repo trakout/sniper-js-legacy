@@ -228,7 +228,7 @@ export default class Sniper {
 
 
   submitOrder(order) {
-    this.db._submitOrderInsecure(order)
+    this.db._submitOrder(order)
   }
 
 
@@ -255,34 +255,34 @@ let snpr = new Sniper({
   provider: web3
 })
 
-// let count = 0;
-// let onOrder = (orders) => {
-//   console.log(count, orders)
-//   count++
-// }
-//
-// snpr.listenOrderBook('ETH:0x6089982faab51b5758974cf6a502d15ca300a4eb', onOrder)
-//
-//
-// snpr.init().then(() => {
-//
-//   snpr.createOrderAsync(
-//     false,
-//     '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mAddr
-//     null, // tAddr
-//     '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mTokenAddr
-//     '0x6089982faab51b5758974cf6a502d15ca300a4eb', // tTokenAddr
-//     new BigNumber(1), // makerTokenAmt
-//     new BigNumber(1), // takerTokenAmt
-//     360000, // expiry length
-//     'ETH'
-//   ).then((order) => {
-//     // console.log(order)
-//     let hash = snpr.getOrderHash(order)
-//     console.log('verification test:', snpr.verifySignature(hash, order.maker, order.sig))
-//     return order
-//   }).then((order) => {
-//     snpr.submitOrder(order)
-//   })
-//
-// })
+let count = 0;
+let onOrder = (orders) => {
+  console.log(count, orders)
+  count++
+}
+
+snpr.listenOrderBook('ETH:0x6089982faab51b5758974cf6a502d15ca300a4eb', onOrder)
+
+
+snpr.init().then(() => {
+
+  snpr.createOrderAsync(
+    false,
+    '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mAddr
+    null, // tAddr
+    '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mTokenAddr
+    '0x6089982faab51b5758974cf6a502d15ca300a4eb', // tTokenAddr
+    new BigNumber(1), // makerTokenAmt
+    new BigNumber(1), // takerTokenAmt
+    360000, // expiry length
+    'ETH'
+  ).then((order) => {
+    // console.log(order)
+    let hash = snpr.getOrderHash(order)
+    console.log('verification test:', snpr.verifySignature(hash, order.maker, order.sig))
+    return order
+  }).then((order) => {
+    snpr.submitOrder(order)
+  })
+
+})
