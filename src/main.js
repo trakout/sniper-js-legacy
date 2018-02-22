@@ -190,6 +190,7 @@ export default class Sniper {
     })
   }
 
+
   /**
    * Externally-available order hashing
    * @param {object} order - complete order data

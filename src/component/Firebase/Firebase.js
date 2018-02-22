@@ -1,5 +1,6 @@
 import firebase from '@firebase/app'
 import '@firebase/firestore'
+import 'whatwg-fetch'
 import Util from 'component/Util'
 
 const cfg = CFG
@@ -80,14 +81,7 @@ export default class Firebase {
         tn:  o.takerTokenAmount.toString(),
       }
 
-      this.db.collection('order_sub')
-      .add(order)
-      .then(function(docRef) {
-        resolve(Object.assign({}, order, {id: docRef.id}))
-      })
-      .catch(function(error) {
-        reject(new Error('Error submitting order: ' + error))
-      })
+      // TODO: post to REST
     }) // Promise
   }
 

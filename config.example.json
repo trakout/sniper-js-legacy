@@ -1,12 +1,38 @@
 {
-  "addr": {
-    "null": "0x0000000000000000000000000000000000000000",
-    "exchange": "0xEXCHANGE_ADDR",
-    "weth": "0xWETH",
-    "sniper_token": "0xSNIPER_TOKEN"
+  "dev": {
+    "addr": {
+      "null": "0x0000000000000000000000000000000000000000",
+      "dex": "0xc8481caaf85492d40cbc943667a782f0213b92eb",
+      "weth": "0xbdec5dc48631953124fb54a89a530eb16e3100e3",
+      "snpx": "0xbdec5dc48631953124fb54a89a530eb16e3100e3"
+    },
+    "abi": {
+      "dex": ""
+    },
+    "msg_prefix": "Submitting Sniper Order \n\n[hash]\n",
+    "fb": {
+      "api": "http://localhost:5000/sniper-stage/us-central1/",
+      "apiKey": "",
+      "authDomain": "sniper-stage.firebaseapp.com",
+      "projectId": "sniper-stage"
+    }
   },
-  "abi": {
-    "dex": "path_to_dex.json"
-  },
-  "msg_prefix": "Submitting Sniper Order \n\n[hash]\n"
+  "prod": {
+    "addr": {
+      "null": "0x0000000000000000000000000000000000000000",
+      "dex": "0xc8481caaf85492d40cbc943667a782f0213b92eb",
+      "weth": "0xbdec5dc48631953124fb54a89a530eb16e3100e3",
+      "snpx": "0xbdec5dc48631953124fb54a89a530eb16e3100e3"
+    },
+    "abi": {
+      "dex": ""
+    },
+    "msg_prefix": "Submitting Sniper Order \n\n[hash]\n",
+    "fb": {
+      "api": "http://localhost:5000/sniper-prod/us-central1/",
+      "apiKey": "",
+      "authDomain": "",
+      "projectId": ""
+    }
+  }
 }
