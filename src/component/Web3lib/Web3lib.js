@@ -75,6 +75,11 @@ export default class Web3lib {
   }
 
 
+  /**
+   * Get available ethereum accounts
+   * @return {Promise} resolves array of accounts
+   */
+
   async _getAccounts() {
     return new Promise( async (resolve, reject) => {
       const accounts = await this.web3.eth.getAccounts()
@@ -82,6 +87,13 @@ export default class Web3lib {
     })
   }
 
+
+  /**
+   * Signs a message
+   * @param  {string}  msg  message to signed
+   * @param  {string}  addr address to use while signing
+   * @return {Promise}      resolves signature
+   */
 
   async _sign(msg, addr) {
     return new Promise( async (resolve, reject) => {

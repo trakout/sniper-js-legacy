@@ -1,7 +1,7 @@
 import firebase from '@firebase/app'
 import '@firebase/firestore'
-import 'whatwg-fetch'
 import Util from 'component/Util'
+import Net from 'component/Net'
 
 const cfg = CFG
 
@@ -81,12 +81,11 @@ export default class Firebase {
         tn:  o.takerTokenAmount.toString(),
       }
 
-      fetch(cfg.fb.api + 'ordersubmit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(order)
+      Net.request(cfg.fb.api + 'ordersubmit', order)
+      .then((result) => {
+        resolve(result)
+      }, (error) => {
+        if (error) reject(error)
       })
 
     }) // Promise
