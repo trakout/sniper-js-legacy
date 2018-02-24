@@ -44,6 +44,17 @@ export default class Util {
 
 
    /**
+    * given pair, get base
+    * @param {string} p - pair
+    * @return {string} pair's base
+    */
+
+    static getBaseFromPair(p) {
+      return p.substr(0, p.indexOf(':'))
+    }
+
+
+   /**
     * given pair, return pair with checksum'd address
     * @param {string} p - pair
     * @return {string} pair with checksum'd address
@@ -64,12 +75,16 @@ export default class Util {
 
   static getQuoteFromOrder(o) {
     let quote = null
-    if (o.base == 'ETH') {
-      if (o.makerTokenAddress !== WETH) {
-        quote = o.makerTokenAddress
+    const base = o.p ? this.getBaseFromPair(o.p) : o.base
+    const makerTokenAddress = o.ma ? o.ma : o.makerTokenAddress
+    const takerTokenAddress = o.ta ? o.ta : o.takerTokenAddress
+
+    if (base == 'ETH') {
+      if (makerTokenAddress !== WETH) {
+        quote = makerTokenAddress
       }
-      if (o.takerTokenAddress !== WETH) {
-        quote = o.takerTokenAddress
+      if (takerTokenAddress !== WETH) {
+        quote = takerTokenAddress
       }
       if (!quote) {
         console.error('Could not find valid quote for pair (base:quote)')
@@ -78,10 +93,10 @@ export default class Util {
       console.error('Only ETH base currently supported')
     }
     if (
-      utils.isAddress(o.makerTokenAddress) &&
-      utils.isAddress(o.takerTokenAddress)
+      utils.isAddress(makerTokenAddress) &&
+      utils.isAddress(takerTokenAddress)
     ) {
-      if (toChecksumAddress(o.makerTokenAddress) == toChecksumAddress(o.takerTokenAddress)) {
+      if (toChecksumAddress(makerTokenAddress) == toChecksumAddress(takerTokenAddress)) {
         // not sure if this will ever happen, but..
         console.error('Util.getQuote: identical maker & taker token')
         quote = null

@@ -11,10 +11,10 @@ chai.use(ChaiPromise)
 
 describe('order submission', () => {
   it('should create and sign order', async () => {
-
+    return true
   })
 
   it ('should verify signed order', () => {
-
+    return true
   })
 })

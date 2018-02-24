@@ -274,7 +274,7 @@ snpr.init().then(() => {
     '0x6089982faab51b5758974cf6a502d15ca300a4eb', // tTokenAddr
     new BigNumber(1), // makerTokenAmt
     new BigNumber(1), // takerTokenAmt
-    360000, // expiry length
+    50000, // expiry length
     'ETH'
   ).then((order) => {
     // console.log(order)

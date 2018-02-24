@@ -1,7 +1,9 @@
 import firebase from '@firebase/app'
 import '@firebase/firestore'
-import Util from 'component/Util'
+
 import Net from 'component/Net'
+import Util from 'component/Util'
+import Assert from 'component/Assert'
 
 const cfg = CFG
 
@@ -27,21 +29,12 @@ export default class Firebase {
 
   async _submitOrderInsecure(o) {
     return new Promise( async (resolve, reject) => {
-      let quote = Util.getQuoteFromOrder(o)
-
-      const order = {
-        p:   o.base + ':' + quote,
-        dex: o.exchangeAddress,
-        exp: o.expirationTimestampInSec.toString(),
-        h:   o.hashHex,
-        s:   o.salt.toString(),
-        sg:  o.sig,
-        m:   o.maker,
-        ma:  o.makerTokenAddress,
-        mn:  o.makerTokenAmount.toString(),
-        t:   o.taker,
-        ta:  o.takerTokenAddress,
-        tn:  o.takerTokenAmount.toString(),
+      let order = null
+      try {
+        order = await Assert.sanitizeOrderOut(o)
+      } catch (e) {
+        console.error(e)
+        return
       }
 
       this.db.collection('order_sub')
@@ -64,21 +57,12 @@ export default class Firebase {
 
   async _submitOrder(o) {
     return new Promise( async (resolve, reject) => {
-      let quote = Util.getQuoteFromOrder(o)
-
-      const order = {
-        p:   o.base + ':' + quote,
-        dex: o.exchangeAddress,
-        exp: o.expirationTimestampInSec.toString(),
-        h:   o.hashHex,
-        s:   o.salt.toString(),
-        sg:  o.sig,
-        m:   o.maker,
-        ma:  o.makerTokenAddress,
-        mn:  o.makerTokenAmount.toString(),
-        t:   o.taker,
-        ta:  o.takerTokenAddress,
-        tn:  o.takerTokenAmount.toString(),
+      let order = null
+      try {
+        order = await Assert.sanitizeOrderOut(o)
+      } catch (e) {
+        console.error(e)
+        return
       }
 
       Net.request(cfg.fb.api + 'ordersubmit', order)
