@@ -1,6 +1,6 @@
 'use strict'
 
-import { abi as dexAbi } from '../../build/contracts/SniperExchange'
+// import { abi as dexAbi } from '../../build/contracts/SniperExchange'
 
 import { BigNumber } from 'bignumber.js'
 import Assert from './component/Assert'
