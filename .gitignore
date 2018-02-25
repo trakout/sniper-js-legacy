@@ -165,3 +165,10 @@ dist
 
 #secrets/config
 config.json
+
+#logs
+coverage.html
+.nyc_output
+
+#legacy
+package-lock.json.bak

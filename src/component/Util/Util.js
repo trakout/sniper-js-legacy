@@ -3,6 +3,8 @@ import { BigNumber } from 'bignumber.js'
 import * as ethABI from 'ethereumjs-abi'
 import { toBuffer, bufferToHex, fromRpcSig, ecrecover, pubToAddress, hashPersonalMessage, toChecksumAddress } from 'ethereumjs-util'
 
+const MAX_DIGITS_IN_UNSIGNED_256_INT = 78
+const UNLIMITED_ALLOWANCE_IN_BASE_UNITS = new BigNumber(2).pow(256).minus(1)
 const WETH = CFG.addr.weth
 let BN = utils.BN
 
@@ -29,6 +31,18 @@ export default class Util {
 
   static bigNumberToBN(num) {
     return new BN(num.toString(), 10)
+  }
+
+
+  /**
+   * Generate psuedo random number
+   * @return {BigNumber} Psuedo-random number
+   */
+
+  static genSalt() {
+    let randNum = BigNumber.random(MAX_DIGITS_IN_UNSIGNED_256_INT)
+    let factor = new BigNumber(10).pow(MAX_DIGITS_IN_UNSIGNED_256_INT - 26)
+    return randNum.times(factor).integerValue(BigNumber.ROUND_FLOOR)
   }
 
 
@@ -122,10 +136,17 @@ export default class Util {
   static isSenderAddressAsync(addr, w3) {
     return new Promise(async (resolve, reject) => {
       if (!utils.isAddress(addr)) {
-        reject('isSenderAddressAsync: invalid address')
+        reject('Util.isSenderAddressAsync: invalid address')
       }
 
-      if ((await w3._getAccounts()).includes(addr)) {
+      let accounts = []
+      try {
+        accounts = await w3._getAccounts()
+      } catch (e) {
+        resolve(false)
+      }
+
+      if (accounts.includes(addr)) {
         resolve(true)
       } else {
         resolve(false)
@@ -222,6 +243,7 @@ export default class Util {
       const retrievedAddress = bufferToHex(pubToAddress(pubKey))
       return toChecksumAddress(retrievedAddress) === signerAddr
     } catch (err) {
+        console.log(err)
         return false
     }
   }

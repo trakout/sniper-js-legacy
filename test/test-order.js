@@ -1,20 +1,145 @@
+import Sniper from '../src/main.js'
+import { utils } from 'web3'
 const promisify = require('es6-promisify')
-const BigNumber = require('bignumber.js')
+const BigNumber = require('bignumber.js-5')
 
 let chai = require('chai')
 let ChaiPromise = require('chai-as-promised')
 let ChaiBigNumber = require('chai-bignumber')
 const expect = chai.expect
-chai.use(ChaiBigNumber())
 chai.use(ChaiPromise)
+chai.use(ChaiBigNumber(BigNumber))
+
+const ROPSTEN_NET = 'https://ropsten.infura.io/FQ4iNOLxTaxMi70mEmSW'
+const MAIN_NET = 'https://mainnet.infura.io/FQ4iNOLxTaxMi70mEmSW'
+
+const EXCHANGE_ADDR   = CFG.addr.dex
+const TOKEN_MAKE_ADDR = '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1'
+const TOKEN_TAKE_ADDR = '0x6089982faab51b5758974cf6a502d15ca300a4eb'
+const NULL_ADDR       = '0x0000000000000000000000000000000000000000'
+
+let o = null // order
+let oHash = null // order hash
+let web3 = null
+let snpr = null
+let gasPrice = null
+let account = null
+let orderHash = null
+let signature = null
+const zeroBn = new BigNumber(0)
+
+
+before(async () => {
+  snpr = new Sniper({
+    exchangeAddr: EXCHANGE_ADDR,
+    provider: ROPSTEN_NET
+  })
+
+  await snpr.init()
+  snpr.newAccount()
+  gasPrice = new BigNumber(await snpr.getGasPriceAsync())
+
+  web3 = snpr.getWeb3()
+  account = (await web3._getAccounts())[0]
+});
+
+
+after(async () => {
+  // workaround:
+  // firebase node process does not exit on its own
+  process.exit()
+});
 
 
 describe('order submission', () => {
-  it('should create and sign order', async () => {
-    return true
+  it('should create and sign new order', async () => {
+
+    // * @param {bool} addPrefix - Adds ethereum signed message prefix
+    // * @param {string} makerAddr - Maker Address
+    // * @param {string} takerAddr - Taker Address
+    // * @param {string} makerTokenAddr - Maker Token Address
+    // * @param {string} takerTokenAddr - Maker Token Address
+    // * @param {BigNumber} makerTokenAmt - Maker Token Amount
+    // * @param {BigNumber} takerTokenAmt - Taker Token Amount
+    // * @param {Number} expirationUnixLen - Expiration length in seconds
+    // * @param {string} base - ETH || EOS
+
+    const addPrefix = false
+    const makerAddr = account
+    const takerAddr = null
+    const mTokenAddr = TOKEN_MAKE_ADDR
+    const tTokenAddr = TOKEN_TAKE_ADDR
+    const makerTokenAmount = new BigNumber(1)
+    const takerTokenAmount = new BigNumber(1)
+    const expireInSeconds = 10000
+    const base = 'ETH'
+
+    const currentTime = Date.now()
+
+    o = await snpr.createOrderAsync(
+      addPrefix,
+      makerAddr,
+      takerAddr,
+      mTokenAddr,
+      tTokenAddr,
+      makerTokenAmount,
+      takerTokenAmount,
+      expireInSeconds,
+      base
+    )
+
+    expect(o.base).to.be.equal(base)
+    expect(o.salt.toString() * 1).to.be.gte(0)
+    expect(o.maker).to.be.equal(makerAddr)
+    expect(o.taker).to.be.equal(NULL_ADDR)
+    expect(o.makerTokenAddress).to.be.equal(TOKEN_MAKE_ADDR)
+    expect(o.takerTokenAddress).to.be.equal(TOKEN_TAKE_ADDR)
+    expect(o.makerTokenAmount).to.be.bignumber.equal(makerTokenAmount)
+    expect(o.takerTokenAmount).to.be.bignumber.equal(takerTokenAmount)
+    expect(o.expirationTimestampInSec.toString() * 1).to.be.gte(currentTime + expireInSeconds)
+    expect(utils.isHexStrict(o.hashHex)).to.be.equal(true)
+    expect(typeof o.sig).to.be.equal('object')
+    expect(typeof o.sig.v).to.be.equal('number')
+    expect(utils.isHexStrict(o.sig.r)).to.be.equal(true)
+    expect(utils.isHexStrict(o.sig.s)).to.be.equal(true)
   })
 
-  it ('should verify signed order', () => {
-    return true
+
+  it('should get new order hash', async () => {
+    oHash = snpr.getOrderHash(o)
+
+    expect(utils.isHexStrict(o.hashHex)).to.be.equal(true)
+    expect(oHash).to.be.equal(o.hashHex)
   })
+
+
+  it('should verify newly-signed order', async () => {
+    oHash = snpr.getOrderHash(o)
+    const verification = snpr.verifySignature(oHash, o.maker, o.sig)
+
+    expect(verification).to.be.equal(true)
+  })
+
+
+  it('should submit new order to order book', async () => {
+    const pair = o.base + ':' + o.takerTokenAddress
+    const orderBookBefore = await snpr.getOrderBookAsync(pair)
+    const orderBookBeforeLen = orderBookBefore.length
+
+    await snpr.submitOrderAsync(o)
+    const orderBookAfter = await snpr.getOrderBookAsync(pair)
+    const orderBookAfterLen = orderBookAfter.length
+
+    expect(orderBookAfterLen).to.be.equal(orderBookBeforeLen + 1)
+  }).timeout(5000)
+
+
+  it('should not be allowed to submit insecure order', async () => {
+    const orderBook = snpr.submitOrderUnsafe(o)
+
+    return expect(orderBook).to.be
+    .rejectedWith(/PERMISSION_DENIED/)
+  }).timeout(5000)
+
+
 })

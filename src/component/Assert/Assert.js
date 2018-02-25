@@ -1,6 +1,6 @@
 import { utils } from 'web3'
 import { BigNumber } from 'bignumber.js'
-import Util from 'component/Util'
+import Util from '../../component/Util'
 
 const cfg = CFG
 

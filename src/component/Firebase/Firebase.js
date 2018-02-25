@@ -1,9 +1,9 @@
 import firebase from '@firebase/app'
 import '@firebase/firestore'
 
-import Net from 'component/Net'
-import Util from 'component/Util'
-import Assert from 'component/Assert'
+import Net from '../../component/Net'
+import Util from '../../component/Util'
+import Assert from '../../component/Assert'
 
 const cfg = CFG
 
@@ -34,7 +34,7 @@ export default class Firebase {
         order = await Assert.sanitizeOrderOut(o)
       } catch (e) {
         console.error(e)
-        return
+        reject(e)
       }
 
       this.db.collection('order_sub')
@@ -62,7 +62,7 @@ export default class Firebase {
         order = await Assert.sanitizeOrderOut(o)
       } catch (e) {
         console.error(e)
-        return
+        reject(e)
       }
 
       Net.request(cfg.fb.api + 'ordersubmit', order)
@@ -109,7 +109,7 @@ export default class Firebase {
    * @return {Promise}
    */
 
-  _getOrderBook(pair) {
+  async _getOrderBook(pair) {
     return new Promise( async (resolve, reject) => {
       const sanitizedPair = Util.checksumPair(pair)
 
@@ -121,7 +121,7 @@ export default class Firebase {
         querySnapshot.forEach(function(doc) {
           orders.push(doc.data())
         })
-        resolve(orders)
+        return resolve(orders)
       }).catch(function(error) {
         reject(new Error('getOrderBook: ' + error))
       })

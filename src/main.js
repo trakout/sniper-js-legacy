@@ -14,8 +14,6 @@ import {
 } from 'ethereumjs-util'
 
 const cfg = CFG
-const MAX_DIGITS_IN_UNSIGNED_256_INT = 78
-const UNLIMITED_ALLOWANCE_IN_BASE_UNITS = new BigNumber(2).pow(256).minus(1)
 const NULL_ADDR = cfg.addr.null
 
 
@@ -64,6 +62,11 @@ export default class Sniper {
   } // _checkOptions
 
 
+  getWeb3() {
+    return this.w3
+  }
+
+
   changeProvider(provider) {
     if (this.w3 && provider) {
       this.provider = provider
@@ -74,15 +77,13 @@ export default class Sniper {
   }
 
 
-  /**
-   * Generate psuedo random number
-   * @return {BigNumber} Psuedo-random number
-   */
+  getGasPriceAsync() {
+    return this.w3._getGasPrice()
+  }
 
-  _genSalt() {
-    let randNum = BigNumber.random(MAX_DIGITS_IN_UNSIGNED_256_INT)
-    let factor = new BigNumber(10).pow(MAX_DIGITS_IN_UNSIGNED_256_INT - 26)
-    return randNum.times(factor).integerValue(BigNumber.ROUND_FLOOR)
+
+  newAccount() {
+    this.w3._newAccount()
   }
 
 
@@ -115,7 +116,7 @@ export default class Sniper {
       const usePrefix = addPrefix ? true : false
       const order = {
         base: base,
-        salt: this._genSalt(),
+        salt: Util.genSalt(),
         maker: makerAddr,
         taker: takerAddr = takerAddr ? takerAddr : NULL_ADDR,
         makerTokenAddress: makerTokenAddr,
@@ -131,7 +132,14 @@ export default class Sniper {
       }
 
       const orderHashHex = Util.getOrderHash(order)
-      const sig = await this.signOrderHashAsync(orderHashHex, order.maker, usePrefix)
+      let sig = null
+
+      try {
+        sig = await this.signOrderHashAsync(orderHashHex, order.maker, usePrefix)
+      } catch (e) {
+        reject(new Error(e))
+        return
+      }
 
       // verification, attempt VRS & RSV
       let ecSig = null
@@ -191,6 +199,15 @@ export default class Sniper {
   }
 
 
+  sanitizeOrderIn(o) {
+    return Assert.sanitizeOrderIn(o)
+  }
+
+  sanitizeOrderOut(o) {
+    return Assert.sanitizeOrderOut(o)
+  }
+
+
   /**
    * Externally-available order hashing
    * @param {object} order - complete order data
@@ -227,8 +244,12 @@ export default class Sniper {
   }
 
 
-  submitOrder(order) {
-    this.db._submitOrder(order)
+  submitOrderAsync(order) {
+    return this.db._submitOrder(order)
+  }
+
+  submitOrderUnsafe(order) {
+    return this.db._submitOrderInsecure(order)
   }
 
 
@@ -236,53 +257,56 @@ export default class Sniper {
 
   }
 
-
-  async getOrderBook(pair) {
-    return new Promise (async (resolve, reject) => {
-      const result = await this.db._getOrderBook(pair)
-      resolve(result)
-    })
-  }
-
   listenOrderBook(pair, cb) {
     this.db._listenOrderBook(pair, cb)
   }
+
+  getOrderBookAsync(pair) {
+    return this.db._getOrderBook(pair)
+  }
 }
 
 
-// test
-let snpr = new Sniper({
-  provider: web3
-})
-
-let count = 0;
-let onOrder = (orders) => {
-  console.log(count, orders)
-  count++
-}
-
-snpr.listenOrderBook('ETH:0x6089982faab51b5758974cf6a502d15ca300a4eb', onOrder)
-
-
-snpr.init().then(() => {
-
-  snpr.createOrderAsync(
-    false,
-    '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mAddr
-    null, // tAddr
-    '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mTokenAddr
-    '0x6089982faab51b5758974cf6a502d15ca300a4eb', // tTokenAddr
-    new BigNumber(1), // makerTokenAmt
-    new BigNumber(1), // takerTokenAmt
-    50000, // expiry length
-    'ETH'
-  ).then((order) => {
-    // console.log(order)
-    let hash = snpr.getOrderHash(order)
-    console.log('verification test:', snpr.verifySignature(hash, order.maker, order.sig))
-    return order
-  }).then((order) => {
-    snpr.submitOrder(order)
-  })
-
-})
+// // test
+// let snpr = new Sniper({
+//   provider: web3
+// })
+//
+// let count = 0;
+// let onOrder = (orders) => {
+//   console.log(count, orders)
+//   count++
+// }
+//
+// snpr.listenOrderBook('ETH:0x6089982faab51b5758974cf6a502d15ca300a4eb', onOrder)
+//
+//
+// snpr.init().then(() => {
+//
+//   console.log('standalone verification test:')
+//   console.log(snpr.verifySignature(
+//     '0xd09e3e833a8581ecc01df146b197f63d243ceb023572044922f547836950599f',
+//     '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1',
+//     {v: 28, r: '0xf7e34636dcb9a4b844e37bb28a998f96cb56a592fd508c738aee96a3222cba93', s: '0x6b8cf351dcfe6a9af1e9c6921b88af028421f2ebb09d87e9b86d6ad37785b7ae'}
+//   ))
+//
+//   // snpr.createOrderAsync(
+//   //   false,
+//   //   '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mAddr
+//   //   null, // tAddr
+//   //   '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mTokenAddr
+//   //   '0x6089982faab51b5758974cf6a502d15ca300a4eb', // tTokenAddr
+//   //   new BigNumber(1), // makerTokenAmt
+//   //   new BigNumber(1), // takerTokenAmt
+//   //   50000, // expiry length
+//   //   'ETH'
+//   // ).then((order) => {
+//   //   // console.log(order)
+//   //   let hash = snpr.getOrderHash(order)
+//   //   console.log('verification test:', snpr.verifySignature(hash, order.maker, order.sig))
+//   //   return order
+//   // }).then((order) => {
+//   //   snpr.submitOrder(order)
+//   // })
+//
+// })
