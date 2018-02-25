@@ -38,11 +38,11 @@ export default class Sniper {
     return new Promise((resolve, reject) => {
       this.w3 = new Web3lib(this.provider)
 
-      this.dex = this.w3._addContract({
-        name: 'dex',
-        addr: cfg.addr.dex,
-        abi: dexAbi
-      })
+      // this.dex = this.w3._addContract({
+      //   name: 'dex',
+      //   addr: cfg.addr.dex,
+      //   abi: dexAbi
+      // })
 
       resolve()
 
@@ -283,30 +283,30 @@ export default class Sniper {
 //
 // snpr.init().then(() => {
 //
-//   console.log('standalone verification test:')
-//   console.log(snpr.verifySignature(
-//     '0xd09e3e833a8581ecc01df146b197f63d243ceb023572044922f547836950599f',
-//     '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1',
-//     {v: 28, r: '0xf7e34636dcb9a4b844e37bb28a998f96cb56a592fd508c738aee96a3222cba93', s: '0x6b8cf351dcfe6a9af1e9c6921b88af028421f2ebb09d87e9b86d6ad37785b7ae'}
-//   ))
+//   // console.log('standalone verification test:')
+//   // console.log(snpr.verifySignature(
+//   //   '0xd09e3e833a8581ecc01df146b197f63d243ceb023572044922f547836950599f',
+//   //   '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1',
+//   //   {v: 28, r: '0xf7e34636dcb9a4b844e37bb28a998f96cb56a592fd508c738aee96a3222cba93', s: '0x6b8cf351dcfe6a9af1e9c6921b88af028421f2ebb09d87e9b86d6ad37785b7ae'}
+//   // ))
 //
-//   // snpr.createOrderAsync(
-//   //   false,
-//   //   '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mAddr
-//   //   null, // tAddr
-//   //   '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mTokenAddr
-//   //   '0x6089982faab51b5758974cf6a502d15ca300a4eb', // tTokenAddr
-//   //   new BigNumber(1), // makerTokenAmt
-//   //   new BigNumber(1), // takerTokenAmt
-//   //   50000, // expiry length
-//   //   'ETH'
-//   // ).then((order) => {
-//   //   // console.log(order)
-//   //   let hash = snpr.getOrderHash(order)
-//   //   console.log('verification test:', snpr.verifySignature(hash, order.maker, order.sig))
-//   //   return order
-//   // }).then((order) => {
-//   //   snpr.submitOrder(order)
-//   // })
+//   snpr.createOrderAsync(
+//     false,
+//     '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mAddr
+//     null, // tAddr
+//     '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mTokenAddr
+//     '0x6089982faab51b5758974cf6a502d15ca300a4eb', // tTokenAddr
+//     new BigNumber(1), // makerTokenAmt
+//     new BigNumber(1), // takerTokenAmt
+//     50000, // expiry length
+//     'ETH'
+//   ).then((order) => {
+//     // console.log(order)
+//     let hash = snpr.getOrderHash(order)
+//     console.log('verification test:', snpr.verifySignature(hash, order.maker, order.sig))
+//     return order
+//   }).then((order) => {
+//     snpr.submitOrderAsync(order)
+//   })
 //
 // })

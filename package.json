@@ -11,7 +11,7 @@
     "start": "webpack-dashboard -- webpack-dev-server --config ./config/webpack.config.js --port 9000 --inline",
     "build": "rimraf dist && NODE_ENV=production webpack -p --config ./config/webpack.production.config.js",
     "test": "cross-env NODE_ENV=test mocha --require ./config/mocha.setup",
-    "test-coverage": "cross-env NODE_ENV=test nyc mocha --require ./config/mocha.setup",
+    "coverage-test": "cross-env NODE_ENV=test nyc mocha --require ./config/mocha.setup",
     "coverage": "cross-env NODE_ENV=test nyc mocha --require ./config/mocha.setup && nyc report --reporter=text-lcov > coverage.lcov && codecov"
   },
   "nyc": {
@@ -29,10 +29,10 @@
     "check-coverage": true,
     "sourceMap": false,
     "instrument": false,
-    "lines": 50,
-    "statements": 50,
-    "functions": 50,
-    "branches": 50
+    "lines": 20,
+    "statements": 20,
+    "functions": 20,
+    "branches": 20
   },
   "resolutions": {
     "hoek": "4.2.1"
