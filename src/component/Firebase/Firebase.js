@@ -121,7 +121,7 @@ export default class Firebase {
         querySnapshot.forEach(function(doc) {
           orders.push(doc.data())
         })
-        return resolve(orders)
+        resolve(orders)
       }).catch(function(error) {
         reject(new Error('getOrderBook: ' + error))
       })
