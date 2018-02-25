@@ -131,7 +131,7 @@ describe('order submission', () => {
     const orderBookAfterLen = orderBookAfter.length
 
     expect(orderBookAfterLen).to.be.equal(orderBookBeforeLen + 1)
-  }).timeout(5000)
+  }).timeout(10000)
 
 
   it('should not be allowed to submit insecure order', async () => {
@@ -139,7 +139,7 @@ describe('order submission', () => {
 
     return expect(orderBook).to.be
     .rejectedWith(/PERMISSION_DENIED/)
-  }).timeout(5000)
+  }).timeout(10000)
 
 
 })
