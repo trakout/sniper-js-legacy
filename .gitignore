@@ -164,7 +164,7 @@ build/*
 dist
 
 #secrets/config
-config.json
+#config.json
 
 #logs
 coverage.html

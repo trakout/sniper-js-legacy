@@ -1,5 +1,7 @@
 {
   "dev": {
+    "msg_prefix": "Submitting Sniper Order \n\n[hash]\n",
+    "max_expiry": "5200000",
     "addr": {
       "null": "0x0000000000000000000000000000000000000000",
       "dex": "0xc8481caaf85492d40cbc943667a782f0213b92eb",
@@ -9,15 +11,16 @@
     "abi": {
       "dex": ""
     },
-    "msg_prefix": "Submitting Sniper Order \n\n[hash]\n",
     "fb": {
       "api": "http://localhost:5000/sniper-stage/us-central1/",
-      "apiKey": "",
+      "apiKey": "AIzaSyCWyJd4Yj_ZE9lk3FY8sKkeCE7DBoA-QRs",
       "authDomain": "sniper-stage.firebaseapp.com",
       "projectId": "sniper-stage"
     }
   },
   "prod": {
+    "msg_prefix": "Submitting Sniper Order \n\n[hash]\n",
+    "max_expiry": "5200000",
     "addr": {
       "null": "0x0000000000000000000000000000000000000000",
       "dex": "0xc8481caaf85492d40cbc943667a782f0213b92eb",
@@ -27,9 +30,8 @@
     "abi": {
       "dex": ""
     },
-    "msg_prefix": "Submitting Sniper Order \n\n[hash]\n",
     "fb": {
-      "api": "http://localhost:5000/sniper-prod/us-central1/",
+      "api": "http://localhost:5000/sniper-stage/us-central1/",
       "apiKey": "",
       "authDomain": "",
       "projectId": ""
