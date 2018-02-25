@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/sniper-exchange/sniper-js.svg?branch=master)](https://travis-ci.org/sniper-exchange/sniper-js)
 [![npm version](https://badge.fury.io/js/sniper-js.svg)](https://badge.fury.io/js/sniper-js)
-<!-- [![codecov.io Code Coverage](https://img.shields.io/codecov/c/github/dwyl/hapi-auth-jwt2.svg?maxAge=2592000)](https://codecov.io/github/sniper-exchange/sniper-js/?branch=master) -->
+[![codecov](https://codecov.io/gh/sniper-exchange/sniper-js/branch/master/graph/badge.svg)](https://codecov.io/gh/sniper-exchange/sniper-js)
 [![NSP Status](https://nodesecurity.io/orgs/sniper-exchange/projects/34350ea9-5bcc-455c-9d28-2f807e738fba/badge)](https://nodesecurity.io/orgs/sniper-exchange/projects/34350ea9-5bcc-455c-9d28-2f807e738fba)
 
 
