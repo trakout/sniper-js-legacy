@@ -19,6 +19,17 @@ export default class Assert {
 
 
   /**
+   * Checks for BigNumber typeof
+   * @param {BigNumber} num
+   * @return {Boolean}
+   */
+
+  static isBigNumber(num) {
+    return utils.isBigNumber(num)
+  }
+
+
+  /**
    * Poor-man's schema check for Order creation
    * @param {orderJson} data - Order data
    * @return {boolean}
