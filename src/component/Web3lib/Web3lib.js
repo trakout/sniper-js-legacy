@@ -9,6 +9,7 @@ export default class Web3lib {
     this.contract = {}
     this.providerType = 'object' // most common...
     this.web3 = new Web3()
+    this.gasLimit = 5000000// maximum gas
     if (provider) this._setProvider(provider)
   }
 
@@ -38,61 +39,45 @@ export default class Web3lib {
   }
 
 
+  /**
+   * Get Ethereum balance by Address
+   * @param  {string}  addr hex ethereum address
+   * @return {BigNumber}
+   */
+
+  async getEthBalance(addr) {
+    return new BigNumber(await this.web3.eth.getBalance(addr))
+  }
+
+
+  /**
+   * Get estimated gas price
+   * @return {BigNumber}
+   */
+
   async _getGasPrice() {
-    return await this.web3.eth.getGasPrice()
+    return new BigNumber(await this.web3.eth.getGasPrice())
   }
 
 
   /**
-   * Load a contract prior to use
-   * @param {object} contractOpt
-   *                 - name : string, can be named anything
-   *                 - abi : ABI JSON
-   *                 - addr : address
-   * @return {object} Contract Object
+   * Get gas limit (whatever it may have been set to)
+   * @return {BigNumber}
    */
 
-  _addContract(contractOpt) {
-
-    if (!contractOpt || !contractOpt.name || !contractOpt.abi || !contractOpt.addr) {
-      console.error('ContractManager._addContract(): Malformed contract args')
-      return
-    }
-
-    let contract = new this.web3.eth.Contract(
-      contractOpt.abi,
-      contractOpt.addr
-    )
-
-    this.contract = Object.assign(this.contract, {
-      name: contractOpt.name,
-      contract
-    })
-
-    return contract
-
+  _getGasLimit() {
+    return new BigNumber(this.gasLimit)
   }
-
-
-  /**
-   * Get contract by name
-   * @param {string} name - contract name, chosen during _addContract
-   * @return {object} Contract Object
-   */
-
-  _getContract(name) {
-    return this.contract[name]
-  }
-
+  
 
   /**
    * Create new account (not recommended for usein production)
    *
    */
 
-   async _newAccount() {
+   async _newAccount(numAddr = 1) {
      this.web3.eth.accounts.wallet.create(
-       1,
+       numAddr,
        Util.genSalt().toString()
      )
 
@@ -133,7 +118,7 @@ export default class Web3lib {
         }
       } catch (e) {}
 
-      // node
+      // node-wallet
       try {
         accounts = await this.web3.eth.getAccounts()
       } catch (e) {}
@@ -157,7 +142,7 @@ export default class Web3lib {
   async _sign(msg, addr) {
     return new Promise( async (resolve, reject) => {
       let sig = null
-      
+
       if (this.providerType == 'object') {
         sig = await this.web3.eth.personal.sign(msg, addr)
       }
@@ -171,5 +156,83 @@ export default class Web3lib {
       resolve(sig)
     })
   }
+
+
+  /**
+   * Send a raw transaction
+   * @param  {string}  fromAddr 'from' address
+   * @param  {string}  toAddr   recipient address
+   * @param  {BigNumber|string}  amount   value
+   * @param  {BigNumber|string}  gasPrice gas price
+   * @param  {string|number}  nonce
+   * @return {Promise}        returns transaction receipt
+   */
+
+  async sendTransaction(fromAddr, toAddr, amount, gasPrice, nonce) {
+    return new Promise(async (resolve, reject) => {
+      let txObj = {
+        from: fromAddr,
+        to: toAddr,
+        value: amount
+      }
+      // checks for gasPrice
+      if (gasPrice) txObj.gasPrice = gasPrice
+      // nonce
+      if (nonce) txObj.nonce = nonce
+
+      const tx = await this.web3.eth.sendTransaction(txObj)
+      resolve(tx)
+    })
+  }
+
+
+  /**
+   * Given transaction hash, return receipt
+   * @param  {string}  txHash transaction hash
+   * @return {Promise}        transaction receipt or bust
+   */
+
+  async getTransactionReceipt(txHash) {
+    return new Promise((resolve, reject) => {
+      this.web3.eth.getTransactionReceipt(txHash, (ret, txObj) => {
+        if (txObj) {
+          resolve(txObj)
+        }
+        resolve()
+      })
+    })
+  }
+
+
+  /**
+   * Given ABI and Address, instantiate & return Web3 Contract
+   * @param  {Object}  artifact     Contract ABI
+   * @param  {string}  contractAddr hex string contract Address
+   * @return {Promise}              Returns web3 contract
+   */
+
+  async getContractInstance(artifact, contractAddr) {
+    return new Promise(async (resolve, reject) => {
+      if (!artifact || !artifact.abi) {
+        reject(new Error('Web3lib.getContractInstance: invalid abi'))
+      }
+
+      const codeExists = await this.web3.eth.getCode(contractAddr)
+      if (/^0x0{0,40}$/i.test(codeExists)) {
+        reject(new Error('Web3lib.getContractInstance: contract code does not exist at: ' + contractAddr))
+      }
+
+      const instance = new this.web3.eth.Contract(
+        artifact.abi,
+        contractAddr,
+        {
+          gas: this._getGasLimit()
+        }
+      )
+
+      resolve(instance)
+    })
+  }
+
 
 }

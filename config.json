@@ -5,7 +5,8 @@
     "addr": {
       "null": "0x0000000000000000000000000000000000000000",
       "dex": "0xc8481caaf85492d40cbc943667a782f0213b92eb",
-      "weth": "0xbdec5dc48631953124fb54a89a530eb16e3100e3",
+      "proxy": "0xbadb56702f42e8fa4d826234ff8744215eb511f3",
+      "weth": "0x0aeecd432724b18906f1d8799dc320b590d1b596",
       "snpx": "0xbdec5dc48631953124fb54a89a530eb16e3100e3"
     },
     "abi": {
@@ -24,6 +25,7 @@
     "addr": {
       "null": "0x0000000000000000000000000000000000000000",
       "dex": "0xc8481caaf85492d40cbc943667a782f0213b92eb",
+      "proxy": "0xc8481caaf85492d40cbc943667a782f0213b92eb",
       "weth": "0xbdec5dc48631953124fb54a89a530eb16e3100e3",
       "snpx": "0xbdec5dc48631953124fb54a89a530eb16e3100e3"
     },

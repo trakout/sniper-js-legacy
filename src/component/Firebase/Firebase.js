@@ -12,11 +12,16 @@ export default class Firebase {
     this.unsubOrderBook = null
     this.cbOrderBook = null
 
-    this.app = firebase.initializeApp({
-      apiKey:     cfg.fb.apiKey,
-      authDomain: cfg.fb.authDomain,
-      projectId:  cfg.fb.projectId
-    })
+    if (firebase.apps.length == 0) {
+      this.app = firebase.initializeApp({
+        apiKey:     cfg.fb.apiKey,
+        authDomain: cfg.fb.authDomain,
+        projectId:  cfg.fb.projectId
+      })
+    } else {
+      this.app = firebase.apps[0]
+    }
+
     this.db = firebase.firestore()
   }
 

@@ -2,11 +2,13 @@
 
 // import { abi as dexAbi } from '../../build/contracts/SniperExchange'
 
-import { BigNumber } from 'bignumber.js'
-import Assert from './component/Assert'
-import Util from './component/Util'
-import Web3lib from './component/Web3lib'
-import Firebase from './component/Firebase'
+import { BigNumber }    from 'bignumber.js'
+import Assert           from './component/Assert'
+import Util             from './component/Util'
+import Web3lib          from './component/Web3lib'
+import ContractManager  from './component/ContractManager'
+import Firebase         from './component/Firebase'
+
 import {
   toBuffer,
   bufferToHex,
@@ -22,6 +24,7 @@ export default class Sniper {
     let err = this._checkOptions(opts)
     if (err) return
 
+    this.Web3lib      = Web3lib
     this.w3           = null
     this.provider     = opts.provider
     this.webworker    = opts.webworker ? opts.webworker : false
@@ -37,17 +40,10 @@ export default class Sniper {
   async init() {
     return new Promise((resolve, reject) => {
       this.w3 = new Web3lib(this.provider)
-
-      // this.dex = this.w3._addContract({
-      //   name: 'dex',
-      //   addr: cfg.addr.dex,
-      //   abi: dexAbi
-      // })
-
+      this.contract = new ContractManager(this.w3)
       resolve()
-
-    }) // promise
-  } // init
+    })
+  }
 
   _checkOptions(opts) {
     let error = false
@@ -62,9 +58,7 @@ export default class Sniper {
   } // _checkOptions
 
 
-  getWeb3() {
-    return this.w3
-  }
+  getWeb3() { return this.w3 }
 
 
   changeProvider(provider) {
@@ -76,15 +70,11 @@ export default class Sniper {
     }
   }
 
+  getGasPriceAsync() { return this.w3._getGasPrice() }
 
-  getGasPriceAsync() {
-    return this.w3._getGasPrice()
-  }
+  newAccount(numAddr) { this.w3._newAccount(numAddr) }
 
-
-  newAccount() {
-    this.w3._newAccount()
-  }
+  getAccountsAsync() { return this.w3._getAccounts() }
 
 
   /**
@@ -243,34 +233,131 @@ export default class Sniper {
     return Util.verifySignature(cfg.msg_prefix + data, signerAddr, ecSig)
   }
 
+  pollTransactionAsync(txHash, frequencyS = 1, timeoutS = 1200) {
+    const frequencyMS = frequencyS * 1000
+    const timeoutMS = timeoutS * 1000
+    let timeTracker = 0
 
-  submitOrderAsync(order) {
-    return this.db._submitOrder(order)
+    return new Promise((resolve, reject) => {
+      let pollTx = setInterval(async () => {
+        if (timeTracker > timeoutMS) {
+          console.warn('Sniper.pollTransactionAsync: timeout for', txHash)
+          clearInterval(pollTx)
+          resolve()
+        }
+        timeTracker += frequencyMS
+
+        const receipt = await this.w3.getTransactionReceipt(txHash)
+        if (receipt) {
+          clearInterval(pollTx)
+          resolve(receipt)
+        }
+      }, frequencyMS)
+    })
   }
 
-  submitOrderUnsafe(order) {
-    return this.db._submitOrderInsecure(order)
+  sendTransactionAsync(fromAddr, toAddr, amount, gasPrice, nonce) {
+    return this.w3.sendTransaction(fromAddr, toAddr, amount, gasPrice, nonce)
+  }
+
+  getEthBalanceAsync(addr) {
+    return this.w3.getEthBalance(addr)
+  }
+
+  // Token-specific Functionality
+  getBalanceAsync(tokenAddr, ownerAddr) {
+    return this.contract.token.getBalanceAsync(tokenAddr, ownerAddr)
+  }
+
+  setUnlimitedApprovalAsync(tokenAddr, ownerAddr, spenderAddr) {
+    return this.contract.token.setUnlimitedAllowanceAsync(tokenAddr, ownerAddr, spenderAddr)
+  }
+
+  getAllowanceAsync(tokenAddr, ownerAddr, spenderAddr) {
+    return this.contract.token.getAllowanceAsync(tokenAddr, ownerAddr, spenderAddr)
+  }
+
+  transferAsync(tokenAddr, ownerAddr, toAddr, amount) {
+    return this.contract.token.transfer(
+      tokenAddr,
+      ownerAddr,
+      toAddr,
+      amount
+    )
+  }
+
+  transferFromAsync(tokenAddr, fromAddr, toAddr, spenderAddr, amount) {
+    return this.contract.token.transferFrom(
+      tokenAddr,
+      fromAddr,
+      toAddr,
+      spenderAddr,
+      amount
+    )
+  }
+
+  depositAsync(tokenAddr, ownerAddr, amount) {
+    return this.contract.token.deposit(
+      tokenAddr,
+      ownerAddr,
+      amount
+    )
+  }
+
+  withdrawAsync(tokenAddr, ownerAddr, amount) {
+    return this.contract.token.withdraw(
+      tokenAddr,
+      ownerAddr,
+      amount
+    )
   }
 
 
-  fillOrder(order) {
+  // TODO
+  fillOrder(order) { return }
 
-  }
+  submitOrderAsync(order) { return this.db._submitOrder(order) }
+  submitOrderUnsafe(order) { return this.db._submitOrderInsecure(order) }
 
-  listenOrderBook(pair, cb) {
-    this.db._listenOrderBook(pair, cb)
-  }
-
-  getOrderBookAsync(pair) {
-    return this.db._getOrderBook(pair)
-  }
+  listenOrderBook(pair, cb) { this.db._listenOrderBook(pair, cb) }
+  getOrderBookAsync(pair) { return this.db._getOrderBook(pair) }
 }
 
 
-// // test
-// let snpr = new Sniper({
-//   provider: web3
-// })
+
+// dev testing
+
+( async () => {
+  // let snpr = new Sniper({
+  //   provider: web3
+  // })
+
+  // await snpr.init()
+  //
+  // const accounts = await snpr.getAccountsAsync()
+  // const ethToDeposit = BigNumber(1000000000000000000) // web3.toWei('1', 'ether')
+
+  // const txDeposit = await snpr.sendTransactionAsync(
+  //   accounts[0],
+  //   cfg.addr.weth,
+  //   ethToDeposit
+  // )
+  // const balance = await snpr.getBalanceAsync(cfg.addr.weth, accounts[0])
+  // console.log('balance:', balance)
+
+  // testing2 addr: 0x7ad2ca2081e4b40147e8b8a6cd3c0907ee09e469
+
+  // const tx = await snpr.setUnlimitedApprovalAsync(cfg.addr.weth, accounts[0])
+  // console.log(tx)
+  // const receipt = await snpr.pollTransactionAsync(tx.transactionHash)
+  //
+  // const balance = await snpr.getBalanceAsync(cfg.addr.weth, accounts[0])
+  // console.log('balance:', balance)
+  //
+  // const allowance = await snpr.getAllowanceAsync(cfg.addr.weth, '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', '0xBadb56702F42e8FA4D826234FF8744215EB511F3')
+  // console.log(allowance)
+})()
+
 //
 // let count = 0;
 // let onOrder = (orders) => {

@@ -1,22 +1,13 @@
+/**
+ * Tests order creation, signing, signature verification, and order submission
+ */
+
 import Sniper from '../src/main.js'
-import { utils } from 'web3'
-const promisify = require('es6-promisify')
-const BigNumber = require('bignumber.js-5')
-
-let chai = require('chai')
-let ChaiPromise = require('chai-as-promised')
-let ChaiBigNumber = require('chai-bignumber')
-const expect = chai.expect
-chai.use(ChaiPromise)
-chai.use(ChaiBigNumber(BigNumber))
-
-const ROPSTEN_NET = 'https://ropsten.infura.io/FQ4iNOLxTaxMi70mEmSW'
-const MAIN_NET = 'https://mainnet.infura.io/FQ4iNOLxTaxMi70mEmSW'
 
 const EXCHANGE_ADDR   = CFG.addr.dex
-const TOKEN_MAKE_ADDR = '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1'
-const TOKEN_TAKE_ADDR = '0x6089982faab51b5758974cf6a502d15ca300a4eb'
 const NULL_ADDR       = '0x0000000000000000000000000000000000000000'
+const TOKEN_MAKE_ADDR   = '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1'
+const TOKEN_TAKE_ADDR   = '0x6089982faab51b5758974cf6a502d15ca300a4eb'
 
 let o = null // order
 let oHash = null // order hash
@@ -51,18 +42,8 @@ after(async () => {
 });
 
 
-describe('order submission', () => {
+describe('Exchange: Order Submission', () => {
   it('should create and sign new order', async () => {
-
-    // * @param {bool} addPrefix - Adds ethereum signed message prefix
-    // * @param {string} makerAddr - Maker Address
-    // * @param {string} takerAddr - Taker Address
-    // * @param {string} makerTokenAddr - Maker Token Address
-    // * @param {string} takerTokenAddr - Maker Token Address
-    // * @param {BigNumber} makerTokenAmt - Maker Token Amount
-    // * @param {BigNumber} takerTokenAmt - Taker Token Amount
-    // * @param {Number} expirationUnixLen - Expiration length in seconds
-    // * @param {string} base - ETH || EOS
 
     const addPrefix = false
     const makerAddr = account
@@ -75,6 +56,16 @@ describe('order submission', () => {
     const base = 'ETH'
 
     const currentTime = Date.now()
+
+    // * @param {bool} addPrefix - Adds ethereum signed message prefix
+    // * @param {string} makerAddr - Maker Address
+    // * @param {string} takerAddr - Taker Address
+    // * @param {string} makerTokenAddr - Maker Token Address
+    // * @param {string} takerTokenAddr - Maker Token Address
+    // * @param {BigNumber} makerTokenAmt - Maker Token Amount
+    // * @param {BigNumber} takerTokenAmt - Taker Token Amount
+    // * @param {Number} expirationUnixLen - Expiration length in seconds
+    // * @param {string} base - ETH || EOS
 
     o = await snpr.createOrderAsync(
       addPrefix,
@@ -131,7 +122,7 @@ describe('order submission', () => {
     const orderBookAfterLen = orderBookAfter.length
 
     expect(orderBookAfterLen).to.be.equal(orderBookBeforeLen + 1)
-  }).timeout(10000)
+  }).timeout(20000)
 
 
   it('should not be allowed to submit insecure order', async () => {
@@ -140,6 +131,4 @@ describe('order submission', () => {
     return expect(orderBook).to.be
     .rejectedWith(/PERMISSION_DENIED/)
   }).timeout(10000)
-
-
 })

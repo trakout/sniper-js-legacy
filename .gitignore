@@ -172,3 +172,7 @@ coverage.html
 
 #legacy
 package-lock.json.bak
+
+# Certain Configs
+config-mnemonic.json
+ignore/*
