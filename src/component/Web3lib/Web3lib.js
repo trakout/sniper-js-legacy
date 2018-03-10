@@ -68,49 +68,7 @@ export default class Web3lib {
   _getGasLimit() {
     return new BigNumber(this.gasLimit)
   }
-
-
-  /**
-   * Load a contract prior to use
-   * @param {object} contractOpt
-   *                 - name : string, can be named anything
-   *                 - abi : ABI JSON
-   *                 - addr : address
-   * @return {object} Contract Object
-   */
-
-  _addContract(contractOpt) {
-
-    if (!contractOpt || !contractOpt.name || !contractOpt.abi || !contractOpt.addr) {
-      console.error('ContractManager._addContract(): Malformed contract args')
-      return
-    }
-
-    let contract = new this.web3.eth.Contract(
-      contractOpt.abi,
-      contractOpt.addr
-    )
-
-    this.contract = Object.assign(this.contract, {
-      name: contractOpt.name,
-      contract
-    })
-
-    return contract
-
-  }
-
-
-  /**
-   * Get contract by name
-   * @param {string} name - contract name, chosen during _addContract
-   * @return {object} Contract Object
-   */
-
-  _getContract(name) {
-    return this.contract[name]
-  }
-
+  
 
   /**
    * Create new account (not recommended for usein production)
