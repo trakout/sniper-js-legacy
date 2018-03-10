@@ -9,11 +9,13 @@ contract TestToken is StandardToken, Ownable {
     string public symbol;
     uint public decimals;
 
-    function TestToken(
+    function TestToken (
         string _name,
         string _symbol,
         uint _decimals,
-        uint _totalSupply)
+        uint _totalSupply
+    )
+        public
     {
         name = _name;
         symbol = _symbol;
@@ -22,7 +24,7 @@ contract TestToken is StandardToken, Ownable {
         balances[msg.sender] = _totalSupply;
     }
 
-    function setBalance(address _target, uint _value) onlyOwner {
+    function setBalance(address _target, uint _value) onlyOwner public {
         uint currBalance = balanceOf(_target);
         if (_value < currBalance) {
             totalSupply = SafeMath.sub(totalSupply, SafeMath.sub(currBalance, _value));

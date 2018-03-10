@@ -9,6 +9,7 @@ export default class Web3lib {
     this.contract = {}
     this.providerType = 'object' // most common...
     this.web3 = new Web3()
+    this.gasLimit = 5000000// maximum gas
     if (provider) this._setProvider(provider)
   }
 
@@ -38,8 +39,34 @@ export default class Web3lib {
   }
 
 
+  /**
+   * Get Ethereum balance by Address
+   * @param  {string}  addr hex ethereum address
+   * @return {BigNumber}
+   */
+
+  async getEthBalance(addr) {
+    return new BigNumber(await this.web3.eth.getBalance(addr))
+  }
+
+
+  /**
+   * Get estimated gas price
+   * @return {BigNumber}
+   */
+
   async _getGasPrice() {
-    return await this.web3.eth.getGasPrice()
+    return new BigNumber(await this.web3.eth.getGasPrice())
+  }
+
+
+  /**
+   * Get gas limit (whatever it may have been set to)
+   * @return {BigNumber}
+   */
+
+  _getGasLimit() {
+    return new BigNumber(this.gasLimit)
   }
 
 
@@ -90,9 +117,9 @@ export default class Web3lib {
    *
    */
 
-   async _newAccount() {
+   async _newAccount(numAddr = 1) {
      this.web3.eth.accounts.wallet.create(
-       1,
+       numAddr,
        Util.genSalt().toString()
      )
 
@@ -173,6 +200,15 @@ export default class Web3lib {
   }
 
 
+  /**
+   * Send a raw transaction
+   * @param  {string}  fromAddr 'from' address
+   * @param  {string}  toAddr   recipient address
+   * @param  {BigNumber|string}  amount   value
+   * @param  {BigNumber|string}  gasPrice gas price
+   * @param  {string|number}  nonce
+   * @return {Promise}        returns transaction receipt
+   */
 
   async sendTransaction(fromAddr, toAddr, amount, gasPrice, nonce) {
     return new Promise(async (resolve, reject) => {
@@ -181,7 +217,9 @@ export default class Web3lib {
         to: toAddr,
         value: amount
       }
+      // checks for gasPrice
       if (gasPrice) txObj.gasPrice = gasPrice
+      // nonce
       if (nonce) txObj.nonce = nonce
 
       const tx = await this.web3.eth.sendTransaction(txObj)
@@ -190,6 +228,11 @@ export default class Web3lib {
   }
 
 
+  /**
+   * Given transaction hash, return receipt
+   * @param  {string}  txHash transaction hash
+   * @return {Promise}        transaction receipt or bust
+   */
 
   async getTransactionReceipt(txHash) {
     return new Promise((resolve, reject) => {
@@ -203,6 +246,12 @@ export default class Web3lib {
   }
 
 
+  /**
+   * Given ABI and Address, instantiate & return Web3 Contract
+   * @param  {Object}  artifact     Contract ABI
+   * @param  {string}  contractAddr hex string contract Address
+   * @return {Promise}              Returns web3 contract
+   */
 
   async getContractInstance(artifact, contractAddr) {
     return new Promise(async (resolve, reject) => {
@@ -215,7 +264,14 @@ export default class Web3lib {
         reject(new Error('Web3lib.getContractInstance: contract code does not exist at: ' + contractAddr))
       }
 
-      const instance = new this.web3.eth.Contract(artifact.abi, contractAddr)
+      const instance = new this.web3.eth.Contract(
+        artifact.abi,
+        contractAddr,
+        {
+          gas: this._getGasLimit()
+        }
+      )
+
       resolve(instance)
     })
   }

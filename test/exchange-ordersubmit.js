@@ -1,9 +1,13 @@
+/**
+ * Tests order creation, signing, signature verification, and order submission
+ */
+
 import Sniper from '../src/main.js'
 
 const EXCHANGE_ADDR   = CFG.addr.dex
-const TOKEN_MAKE_ADDR = '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1'
-const TOKEN_TAKE_ADDR = '0x6089982faab51b5758974cf6a502d15ca300a4eb'
 const NULL_ADDR       = '0x0000000000000000000000000000000000000000'
+const TOKEN_MAKE_ADDR   = '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1'
+const TOKEN_TAKE_ADDR   = '0x6089982faab51b5758974cf6a502d15ca300a4eb'
 
 let o = null // order
 let oHash = null // order hash
@@ -38,7 +42,7 @@ after(async () => {
 });
 
 
-describe('order submission', () => {
+describe('Exchange: Order Submission', () => {
   it('should create and sign new order', async () => {
 
     const addPrefix = false
@@ -118,7 +122,7 @@ describe('order submission', () => {
     const orderBookAfterLen = orderBookAfter.length
 
     expect(orderBookAfterLen).to.be.equal(orderBookBeforeLen + 1)
-  }).timeout(10000)
+  }).timeout(20000)
 
 
   it('should not be allowed to submit insecure order', async () => {

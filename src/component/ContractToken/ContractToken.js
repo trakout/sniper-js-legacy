@@ -18,7 +18,7 @@ export default class ContractToken {
    * Get token balance
    * @param  {string}  tokenAddr hex string token address
    * @param  {string}  ownerAddr hex string owner address
-   * @return {Promise}
+   * @return {Promise}           BigNumber balance value
    */
 
   async getBalanceAsync(
@@ -34,7 +34,9 @@ export default class ContractToken {
       }
 
       const instance = await this._getContractInstance(ArtifactToken, tokenAddr)
-      const balance = await instance.methods.balanceOf(ownerAddr).call({from: ownerAddr})
+      const balance = new BigNumber(
+        await instance.methods.balanceOf(ownerAddr).call({from: ownerAddr})
+      )
       resolve(balance)
     })
   }
@@ -45,7 +47,7 @@ export default class ContractToken {
    * @param  {string}  tokenAddr   hex string token address
    * @param  {string}  ownerAddr   hex string owner address
    * @param  {string}  spenderAddr hex string spender address
-   * @return {Promise}             resolves allowance
+   * @return {Promise}             BigNumber allowance value
    */
 
   async getAllowanceAsync(
@@ -66,8 +68,9 @@ export default class ContractToken {
       }
 
       const instance = await this._getContractInstance(ArtifactToken, tokenAddr)
-      const allowance = await instance.methods.allowance(ownerAddr, spenderAddress).call({from: ownerAddr})
-
+      const allowance = new BigNumber(
+        await instance.methods.allowance(ownerAddr, spenderAddress).call({from: ownerAddr})
+      )
       resolve(allowance)
     })
   }
@@ -100,8 +103,12 @@ export default class ContractToken {
         reject(new Error('ContractToken.setAllowanceAsync: invalid param(s)'))
       }
 
+      const gasLimit = this.web3._getGasLimit()
       const instance = await this._getContractInstance(ArtifactToken, tokenAddr)
-      const tx = instance.methods.approve(spenderAddress, amount).send({from: ownerAddr})
+      const tx = instance.methods.approve(spenderAddress, amount).send({
+        from: ownerAddr,
+        gas: gasLimit
+      })
       resolve(tx)
     })
   }
@@ -164,9 +171,12 @@ export default class ContractToken {
       ) {
         reject(new Error('ContractToken.transfer: invalid param(s)'))
       }
-
+      const gasLimit = this.web3._getGasLimit()
       const instance = await this._getContractInstance(ArtifactToken, tokenAddr)
-      const tx = await instance.methods.transfer(toAddr, amount).send({from: ownerAddr})
+      const tx = await instance.methods.transfer(toAddr, amount).send({
+        from: ownerAddr,
+        gas: gasLimit
+      })
       resolve(tx)
     })
   }
@@ -185,6 +195,7 @@ export default class ContractToken {
     tokenAddr,
     fromAddr,
     toAddr,
+    spenderAddr,
     amount
   ) {
     return new Promise(async (resolve, reject) => {
@@ -192,13 +203,58 @@ export default class ContractToken {
         !Assert.isAddress(tokenAddr) ||
         !Assert.isAddress(fromAddr) ||
         !Assert.isAddress(toAddr) ||
+        !Assert.isAddress(spenderAddr) ||
         !Assert.isBigNumber(amount)
       ) {
         reject(new Error('ContractToken.transferFrom: invalid param(s)'))
       }
 
+      const gasLimit = this.web3._getGasLimit()
       const instance = await this._getContractInstance(ArtifactToken, tokenAddr)
-      const tx = await instance.methods.transferFrom(fromAddr, toAddr, amount).send({from: ownerAddr})
+      const tx = await instance.methods.transferFrom(fromAddr, toAddr, amount).send({
+        from: spenderAddr,
+        gas: gasLimit
+      })
+      resolve(tx)
+    })
+  }
+
+
+  /**
+   * Explicit Deposit for contracts that support it (eg EtherToken)
+   * @param  {string}  tokenAddr hex token Address
+   * @param  {string}  ownerAddr hex address to deposit to (msg.sender)
+   * @param  {BigNumber} amount  amount to Deposit
+   * @return {Promise}           resolves transaction
+   */
+
+  async deposit(
+    tokenAddr,
+    ownerAddr,
+    amount
+  ) {
+    return new Promise(async (resolve, reject) => {
+      if (
+        !Assert.isAddress(tokenAddr) ||
+        !Assert.isAddress(ownerAddr) ||
+        !Assert.isBigNumber(amount)
+      ) {
+        reject(new Error('ContractToken.deposit: invalid param(s)'))
+      }
+
+      const gasLimit = this.web3._getGasLimit()
+      const instance = await this._getContractInstance(ArtifactToken, tokenAddr)
+
+      if (typeof instance.methods.deposit == 'undefined') {
+        reject(new Error('ContractToken.deposit: method does not exist in this contract'))
+      }
+
+      const tx = await instance.methods.deposit().send({
+        from: ownerAddr,
+        value: amount,
+        gas: gasLimit
+      })
+      
       resolve(tx)
     })
   }
@@ -226,7 +282,13 @@ export default class ContractToken {
         reject(new Error('ContractToken.withdraw: invalid param(s)'))
       }
 
+      const gasLimit = this.web3._getGasLimit()
       const instance = await this._getContractInstance(ArtifactToken, tokenAddr)
+
+      if (typeof instance.methods.withdraw == 'undefined') {
+        reject(new Error('ContractToken.withdraw: method does not exist in this contract'))
+      }
+
       const tx = await instance.methods.withdraw(amount).send({from: ownerAddr})
       resolve(tx)
     })

@@ -21,11 +21,11 @@ global.ChaiPromise = require('chai-as-promised')
 global.ChaiBigNumber = require('chai-bignumber')
 global.expect = chai.expect
 global.chai.use(ChaiPromise)
-global.chai.use(ChaiBigNumber(BigNumber))
+global.chai.use(ChaiBigNumber(global.BigNumber))
 
+global.LOCAL_NET = 'http://localhost:8545'
 global.ROPSTEN_NET = 'https://ropsten.infura.io/FQ4iNOLxTaxMi70mEmSW'
 global.MAIN_NET = 'https://mainnet.infura.io/FQ4iNOLxTaxMi70mEmSW'
-
 
 let networks = {
   development: {
