@@ -3,6 +3,7 @@ var path              = require('path');
 var webpack           = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
+var CompressionPlugin = require("compression-webpack-plugin");
 
 module.exports = {
   entry: [
@@ -12,7 +13,7 @@ module.exports = {
   output: {
       path: path.join(__dirname, '../dist/'),
       publicPath: '/',
-      filename: 'main.[hash].js'
+      filename: 'main.js'
   },
   debug: false,
   // devtool: 'source-map',
@@ -33,20 +34,8 @@ module.exports = {
         }
       },
       {
-        test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
-        loader: 'file-loader?name=./asset/[hash].[ext]' // disable hashing
-      },
-      {
-        test: /\.(png|jpg?)(\?[a-z0-9=&.]+)?$/,
-        loader: 'file-loader?name=./asset/[name].[ext]'
-      },
-      {
         test: /\.(ico?)(\?[a-z0-9=&.]+)?$/,
         loader: 'file-loader?name=./[name].[ext]'
-      },
-      {
-        test: /\.styl$/,
-        loader: ExtractTextPlugin.extract("css!autoprefixer!stylus-loader")
       },
       {
         test: /\.json$/,
@@ -60,14 +49,33 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify('production')
-      }
-      // 'CFG': JSON.stringify(CFG)
+      },
+      'CFG': JSON.stringify(CFG)
     }),
-    new webpack.optimize.CommonsChunkPlugin('common.js'),
+    // new webpack.optimize.CommonsChunkPlugin('common.js'),
     new webpack.optimize.DedupePlugin(),
-    new webpack.optimize.UglifyJsPlugin(),
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        sequences: true,
+        dead_code: true,
+        conditionals: true,
+        booleans: true,
+        unused: true,
+        if_return: true,
+        join_vars: true,
+        drop_console: true
+      },
+      mangle: {
+        except: ['$super', '$', 'exports', 'require']
+      },
+      output: {
+        comments: false
+      }
+    }),
     new webpack.optimize.AggressiveMergingPlugin(),
-    new ExtractTextPlugin('[name].[hash].css')
+    new CompressionPlugin({
+      algorithm: "gzip"
+    })
   ],
   devServer: {
     contentBase: "./src"

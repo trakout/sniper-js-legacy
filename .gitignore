@@ -161,7 +161,7 @@ Temporary Items
 #build directory
 build
 build/*
-dist
+#dist
 
 #secrets/config
 #config.json
