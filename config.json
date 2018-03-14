@@ -33,10 +33,10 @@
       "dex": ""
     },
     "fb": {
-      "api": "https://us-central1-sniper-prod.cloudfunctions.net/",
-      "apiKey": "",
-      "authDomain": "",
-      "projectId": ""
+      "api": "https://us-central1-sniper-stage.cloudfunctions.net/",
+      "apiKey": "AIzaSyCWyJd4Yj_ZE9lk3FY8sKkeCE7DBoA-QRs",
+      "authDomain": "sniper-stage.firebaseapp.com",
+      "projectId": "sniper-stage"
     }
   }
 }

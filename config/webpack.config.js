@@ -6,79 +6,82 @@ var DashboardPlugin   = require('webpack-dashboard/plugin');
 
 var HOST = 'http://127.0.0.1:9000/';
 
+
 module.exports = {
+  mode: 'development',
   entry: [
     'babel-polyfill',
     './src/main',
     'webpack-dev-server/client?' + HOST
   ],
   output: {
-      publicPath: HOST,
-      filename: 'main.[hash].js'
+    publicPath: HOST,
+    filename: 'main.[hash].js'
   },
-  debug: true,
   devtool: 'eval-source-map',
-  resolve: {
-    root: [
-      path.resolve('./node_modules'),
-      path.resolve('./src')
-    ]
+  devServer: {
+    // hot: true,
+    compress: true,
+    port: 9000,
+    contentBase: "./src"
   },
+  // resolve: {
+  //   modules: [
+  //     path.resolve('./node_modules'),
+  //     path.resolve('./src')
+  //   ]
+  // },
   module: {
-    loaders: [
+    rules: [
       {
         test: /\.pug$/,
-        loaders: ["raw-loader", "pug-html-loader"]
+        use: ['raw-loader', 'pug-html-loader']
       },
       {
         test: /\.js$/,
         include: path.join(__dirname, '../src'),
-        loader: 'babel-loader',
-        query: {
-          presets: [
-            'es2015'
-          ]
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['env']
+          }
         }
       },
       {
         test: /\.(ttf|eot|svg|woff(2)?)(\?[a-z0-9=&.]+)?$/,
-        loader: 'file-loader?name=./asset/[hash].[ext]' // disable hashing
+        use: 'file-loader?name=./asset/[hash].[ext]' // disable hashing
       },
       {
         test: /\.(png|jpg?)(\?[a-z0-9=&.]+)?$/,
-        loader: 'file-loader?name=./asset/[name].[ext]'
+        use: 'file-loader?name=./asset/[name].[ext]'
       },
       {
         test: /\.(ico?)(\?[a-z0-9=&.]+)?$/,
-        loader: 'file-loader?name=./[name].[ext]'
+        use: 'file-loader?name=./[name].[ext]'
       },
       {
         test: /\.styl$/,
-        loader: 'style!css?sourceMap!autoprefixer!stylus-loader'
+        use: 'style!css?sourceMap!autoprefixer!stylus-loader'
       },
       {
-        test: /\.json$/,
-        loader: 'json-loader'
+        test: /\.(glsl|frag|vert)$/,
+        use: 'raw',
+        exclude: /node_modules/
       },
-      { test: /\.(glsl|frag|vert)$/, loader: 'raw', exclude: /node_modules/ },
-      { test: /\.(glsl|frag|vert)$/, loader: 'glslify', exclude: /node_modules/ }
+      {
+        test: /\.(glsl|frag|vert)$/,
+        use: 'glslify',
+        exclude: /node_modules/
+      },
     ]
   },
   plugins: [
-    // new webpack.HotModuleReplacementPlugin(),
-    new HtmlWebpackPlugin({
-      template: './src/index.pug'
-    }),
     new webpack.DefinePlugin({
       'CFG': JSON.stringify(CFG)
     }),
+    new HtmlWebpackPlugin({
+      template: './src/index.pug'
+    }),
     new DashboardPlugin()
-  ],
-  devServer: {
-    // hot: true,
-    host: '0.0.0.0',
-    port: 9000,
-    open: true,
-    contentBase: "./src"
-  }
+  ]
 };

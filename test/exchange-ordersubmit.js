@@ -85,8 +85,8 @@ describe('Exchange: Order Submission', () => {
     expect(o.taker).to.be.equal(NULL_ADDR)
     expect(o.makerTokenAddress).to.be.equal(TOKEN_MAKE_ADDR)
     expect(o.takerTokenAddress).to.be.equal(TOKEN_TAKE_ADDR)
-    expect(o.makerTokenAmount).to.be.bignumber.equal(makerTokenAmount)
-    expect(o.takerTokenAmount).to.be.bignumber.equal(takerTokenAmount)
+    expect(o.makerTokenAmount.toString()).to.be.equal(makerTokenAmount.toString())
+    expect(o.takerTokenAmount.toString()).to.be.equal(takerTokenAmount.toString())
     expect(o.expirationTimestampInSec.toString() * 1).to.be.gte(currentTime + expireInSeconds)
     expect(utils.isHexStrict(o.hashHex)).to.be.equal(true)
     expect(typeof o.sig).to.be.equal('object')
@@ -127,8 +127,6 @@ describe('Exchange: Order Submission', () => {
 
   it('should not be allowed to submit insecure order', async () => {
     const orderBook = snpr.submitOrderUnsafe(o)
-
-    return expect(orderBook).to.be
-    .rejectedWith(/PERMISSION_DENIED/)
+    return expect(orderBook).to.be.rejected
   }).timeout(10000)
 })

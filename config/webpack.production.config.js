@@ -1,48 +1,93 @@
 var CFG               = require('../config').prod;
 var path              = require('path');
 var webpack           = require('webpack');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
+var UglifyJsPlugin    = require('uglifyjs-webpack-plugin')
 var CompressionPlugin = require("compression-webpack-plugin");
 
-module.exports = {
+
+var targetMode = null
+if (process.argv.indexOf("--target") != -1) {
+  targetMode = process.argv[process.argv.indexOf("--target") + 1];
+}
+
+
+var nodeTargetConfig = {
+  target: 'node',
+  output: {
+      path: path.join(__dirname, '../dist/'),
+      publicPath: '/',
+      filename: 'main.node.js',
+      libraryTarget: 'commonjs-module'
+  },
+  resolve: {
+    alias: {
+      'scrypt.js': path.resolve(__dirname, '../node_modules/scrypt.js/js.js'),
+      'sha3': path.resolve(__dirname, '../node_modules/sha3/build/Release/sha3.node'),
+      '../build/Release/bufferutil': path.resolve(__dirname, '../node_modules/web3/node_modules/websocket/build/Release/bufferutil.node'),
+      '../build/default/bufferutil': path.resolve(__dirname, '../node_modules/web3/node_modules/websocket/build/Release/bufferutil.node'),
+      '../build/Release/validation': path.resolve(__dirname, '../node_modules/web3/node_modules/websocket/build/Release/validation.node'),
+      '../build/default/validation': path.resolve(__dirname, '../node_modules/web3/node_modules/websocket/build/Release/validation.node'),
+    },
+  },
+  performance: {
+    hints: false
+  },
+  optimization: {
+    minimize: false
+  },
+};
+
+
+var defaultConfig = {
+  mode: 'production',
   entry: [
     'babel-polyfill',
-    './src/main'
+    './src/main.js'
   ],
   output: {
       path: path.join(__dirname, '../dist/'),
       publicPath: '/',
-      filename: 'main.js'
+      filename: 'main.js',
+      libraryTarget: 'commonjs-module'
   },
-  debug: false,
-  // devtool: 'source-map',
   module: {
-    loaders: [
+    noParse: /node_modules\/web3/,
+    rules: [
       {
-        test: /\.pug$/,
-        loaders: ["raw-loader", "pug-html-loader"]
+        test: /\.node$/,
+        use: 'node-loader'
       },
       {
         test: /\.js$/,
-        include: path.join(__dirname, '../src'),
-        loader: 'babel-loader',
-        query: {
-          presets: [
-            'es2015'
-          ]
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['env'],
+            compact: false,
+            plugins: [
+              'add-module-exports'
+            ]
+          }
         }
-      },
-      {
-        test: /\.(ico?)(\?[a-z0-9=&.]+)?$/,
-        loader: 'file-loader?name=./[name].[ext]'
-      },
-      {
-        test: /\.json$/,
-        loader: 'json-loader'
-      },
-      { test: /\.(glsl|frag|vert)$/, loader: 'raw', exclude: /node_modules/ },
-      { test: /\.(glsl|frag|vert)$/, loader: 'glslify', exclude: /node_modules/ }
+      }
+    ]
+  },
+  optimization: {
+    minimizer: [
+      new UglifyJsPlugin({
+        uglifyOptions: {
+          beautify: false,
+          compress: true,
+          comments: false,
+          mangle: {
+            reserved: ['$super', '$', 'exports', 'require']
+          },
+          toplevel: false,
+          keep_classnames: true,
+          keep_fnames: true
+        }
+      })
     ]
   },
   plugins: [
@@ -52,32 +97,21 @@ module.exports = {
       },
       'CFG': JSON.stringify(CFG)
     }),
-    // new webpack.optimize.CommonsChunkPlugin('common.js'),
-    new webpack.optimize.DedupePlugin(),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        sequences: true,
-        dead_code: true,
-        conditionals: true,
-        booleans: true,
-        unused: true,
-        if_return: true,
-        join_vars: true,
-        drop_console: true
-      },
-      mangle: {
-        except: ['$super', '$', 'exports', 'require']
-      },
-      output: {
-        comments: false
-      }
-    }),
-    new webpack.optimize.AggressiveMergingPlugin(),
     new CompressionPlugin({
-      algorithm: "gzip"
+      algorithm: 'gzip',
+      exclude: /main.node.js/,
     })
   ],
-  devServer: {
-    contentBase: "./src"
-  }
 };
+
+
+if (targetMode == 'node') {
+  defaultConfig = Object.assign(
+    {},
+    defaultConfig,
+    nodeTargetConfig
+  )
+}
+
+
+module.exports = defaultConfig;

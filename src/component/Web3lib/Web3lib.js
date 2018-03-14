@@ -1,4 +1,6 @@
 import Web3 from 'web3'
+import { BigNumber } from 'bignumber.js'
+
 import Util from '../../component/Util'
 
 const LS_KEY = 'sniperaccount'
@@ -68,7 +70,7 @@ export default class Web3lib {
   _getGasLimit() {
     return new BigNumber(this.gasLimit)
   }
-  
+
 
   /**
    * Create new account (not recommended for usein production)

@@ -1,7 +1,5 @@
 'use strict'
 
-// import { abi as dexAbi } from '../../build/contracts/SniperExchange'
-
 import { BigNumber }    from 'bignumber.js'
 import Assert           from './component/Assert'
 import Util             from './component/Util'
@@ -30,7 +28,6 @@ export default class Sniper {
     this.webworker    = opts.webworker ? opts.webworker : false
     this.db           = new Firebase()
   }
-
 
   /**
    * Instantiate Web3 & Contracts
@@ -327,36 +324,36 @@ export default class Sniper {
 
 // dev testing
 
-( async () => {
-  // let snpr = new Sniper({
-  //   provider: web3
-  // })
-
-  // await snpr.init()
-  //
-  // const accounts = await snpr.getAccountsAsync()
-  // const ethToDeposit = BigNumber(1000000000000000000) // web3.toWei('1', 'ether')
-
-  // const txDeposit = await snpr.sendTransactionAsync(
-  //   accounts[0],
-  //   cfg.addr.weth,
-  //   ethToDeposit
-  // )
-  // const balance = await snpr.getBalanceAsync(cfg.addr.weth, accounts[0])
-  // console.log('balance:', balance)
-
-  // testing2 addr: 0x7ad2ca2081e4b40147e8b8a6cd3c0907ee09e469
-
-  // const tx = await snpr.setUnlimitedApprovalAsync(cfg.addr.weth, accounts[0])
-  // console.log(tx)
-  // const receipt = await snpr.pollTransactionAsync(tx.transactionHash)
-  //
-  // const balance = await snpr.getBalanceAsync(cfg.addr.weth, accounts[0])
-  // console.log('balance:', balance)
-  //
-  // const allowance = await snpr.getAllowanceAsync(cfg.addr.weth, '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', '0xBadb56702F42e8FA4D826234FF8744215EB511F3')
-  // console.log(allowance)
-})()
+// ( async () => {
+//   let snpr = new Sniper({
+//     provider: web3
+//   })
+//
+//   await snpr.init()
+//
+//   const accounts = await snpr.getAccountsAsync()
+//   const ethToDeposit = BigNumber(1000000000000000000) // web3.toWei('1', 'ether')
+//
+//   const txDeposit = await snpr.sendTransactionAsync(
+//     accounts[0],
+//     cfg.addr.weth,
+//     ethToDeposit
+//   )
+//   // const balance = await snpr.getBalanceAsync(cfg.addr.weth, accounts[0])
+//   // console.log('balance:', balance)
+//
+//   // testing2 addr: 0x7ad2ca2081e4b40147e8b8a6cd3c0907ee09e469
+//   //
+//   const tx = await snpr.setUnlimitedApprovalAsync(cfg.addr.weth, accounts[0])
+//   console.log(tx)
+//   const receipt = await snpr.pollTransactionAsync(tx.transactionHash)
+//
+//   const balance = await snpr.getBalanceAsync(cfg.addr.weth, accounts[0])
+//   console.log('balance:', balance)
+//
+//   const allowance = await snpr.getAllowanceAsync(cfg.addr.weth, '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', '0xBadb56702F42e8FA4D826234FF8744215EB511F3')
+//   console.log(allowance.toString())
+// })()
 
 //
 // let count = 0;
@@ -364,8 +361,11 @@ export default class Sniper {
 //   console.log(count, orders)
 //   count++
 // }
-//
-// snpr.listenOrderBook('ETH:0x6089982faab51b5758974cf6a502d15ca300a4eb', onOrder)
+
+// let snpr = new Sniper({
+//   provider: web3
+// })
+// // snpr.listenOrderBook('ETH:0x6089982faab51b5758974cf6a502d15ca300a4eb', onOrder)
 //
 //
 // snpr.init().then(() => {
