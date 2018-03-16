@@ -9,7 +9,7 @@
 
 
 ### Overview
-SniperJS is a javascript library that assists in the of development third-party applications for [sniper.io](https://www.sniper.io/). SniperJS ships as an ECMAScript 6 module, and can run in-browser or in NodeJS. This module aims to provide reusable code in support of a range of applications, from frontends to bots.
+SniperJS is a javascript library that assists in the of development third-party applications for [sniper.io](https://www.sniper.io/). SniperJS ships as both ECMAScript 6 and CommonJS modules -- it can run in-browser or in NodeJS. This module aims to provide reusable code in support of a range of applications, from frontends to bots.
 
 
 ### Module Installation

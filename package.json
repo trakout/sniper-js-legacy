@@ -51,7 +51,6 @@
     "isomorphic-fetch": "^2.2.1"
   },
   "devDependencies": {
-    "argv": "0.0.2",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.4",
     "babel-plugin-add-module-exports": "^0.2.1",

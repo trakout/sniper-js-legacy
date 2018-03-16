@@ -160,7 +160,8 @@ export default class Assert {
 
   /**
    * Validate and sanitize incoming order
-   * @param {object} o - complete order
+   * @param {object} order - complete order
+   * @param {object} transform - transform bignumbers
    * @return {Promise} order object || Error
    */
   static sanitizeOrderIn(order, transform) {
@@ -190,9 +191,10 @@ export default class Assert {
       const quote = Util.getQuoteFromPair(o.p)
       const saltBn = transform ? o.s : new BigNumber(o.s)
       const expBn = transform ? o.exp : new BigNumber(o.exp)
-      const maxExp = new BigNumber(Date.now() + (cfg.max_expiry * 1))
+      const maxExp = new BigNumber(Date.now() + (cfg.max_expiry * 1000))
       const currentTime = new BigNumber(Date.now())
       const zeroBn = new BigNumber(0)
+      const hashCheck = Util.getOrderHash(o)
 
       if (
         !o ||
@@ -206,7 +208,9 @@ export default class Assert {
         (transform && !utils.isBigNumber(o.exp))          ||
         (!transform && (typeof o.exp !== 'string'))       ||
         (currentTime.gte(expBn))                          ||
+        (expBn.gt(maxExp))                                ||
         !o.h                                              ||
+        (o.h != hashCheck)                                ||
         !Util.isHex(o.h)                                  ||
         !o.s                                              ||
         (transform && !utils.isBigNumber(o.s))            ||

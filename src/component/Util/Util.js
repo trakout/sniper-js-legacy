@@ -163,22 +163,22 @@ export default class Util {
 
   static getOrderHash(order) {
     const orderParts = [
-      { value: order.exchangeAddress, type: 'address' },
-      { value: order.maker, type: 'address' },
-      { value: order.taker, type: 'address' },
-      { value: this.bigNumberToBN(order.salt), type: 'uint256' },
-      { value: order.makerTokenAddress, type: 'address' },
-      { value: order.takerTokenAddress, type: 'address' },
+      { value: order.exchangeAddress || order.dex, type: 'address' },
+      { value: order.maker || order.m, type: 'address' },
+      { value: order.taker || order.t, type: 'address' },
+      { value: this.bigNumberToBN(order.salt || order.s), type: 'uint256' },
+      { value: order.makerTokenAddress || order.ma, type: 'address' },
+      { value: order.takerTokenAddress || order.ta, type: 'address' },
       {
-          value: this.bigNumberToBN(order.makerTokenAmount),
+          value: this.bigNumberToBN(order.makerTokenAmount || order.mn),
           type: 'uint256',
       },
       {
-          value: this.bigNumberToBN(order.takerTokenAmount),
+          value: this.bigNumberToBN(order.takerTokenAmount || order.tn),
           type: 'uint256',
       },
       {
-          value: this.bigNumberToBN(order.expirationTimestampInSec),
+          value: this.bigNumberToBN(order.expirationTimestampInSec || order.exp),
           type: 'uint256',
       }
     ]

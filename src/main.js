@@ -365,10 +365,11 @@ export default class Sniper {
 // let snpr = new Sniper({
 //   provider: web3
 // })
-// // snpr.listenOrderBook('ETH:0x6089982faab51b5758974cf6a502d15ca300a4eb', onOrder)
+// snpr.listenOrderBook('ETH:0x6089982faab51b5758974cf6a502d15ca300a4eb', onOrder)
+
+
+// snpr.init().then(async () => {
 //
-//
-// snpr.init().then(() => {
 //
 //   // console.log('standalone verification test:')
 //   // console.log(snpr.verifySignature(
@@ -376,24 +377,24 @@ export default class Sniper {
 //   //   '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1',
 //   //   {v: 28, r: '0xf7e34636dcb9a4b844e37bb28a998f96cb56a592fd508c738aee96a3222cba93', s: '0x6b8cf351dcfe6a9af1e9c6921b88af028421f2ebb09d87e9b86d6ad37785b7ae'}
 //   // ))
-//
-//   snpr.createOrderAsync(
-//     false,
-//     '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mAddr
-//     null, // tAddr
-//     '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mTokenAddr
-//     '0x6089982faab51b5758974cf6a502d15ca300a4eb', // tTokenAddr
-//     new BigNumber(1), // makerTokenAmt
-//     new BigNumber(1), // takerTokenAmt
-//     50000, // expiry length
-//     'ETH'
-//   ).then((order) => {
-//     // console.log(order)
-//     let hash = snpr.getOrderHash(order)
-//     console.log('verification test:', snpr.verifySignature(hash, order.maker, order.sig))
-//     return order
-//   }).then((order) => {
-//     snpr.submitOrderAsync(order)
-//   })
+//   //
+//   // snpr.createOrderAsync(
+//   //   false,
+//   //   '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mAddr
+//   //   null, // tAddr
+//   //   '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mTokenAddr
+//   //   '0x6089982faab51b5758974cf6a502d15ca300a4eb', // tTokenAddr
+//   //   new BigNumber(1), // makerTokenAmt
+//   //   new BigNumber(1), // takerTokenAmt
+//   //   5100000000, // expiry length
+//   //   'ETH'
+//   // ).then((order) => {
+//   //   // console.log(order)
+//   //   let hash = snpr.getOrderHash(order)
+//   //   console.log('verification test:', snpr.verifySignature(hash, order.maker, order.sig))
+//   //   return order
+//   // }).then((order) => {
+//   //   snpr.submitOrderAsync(order)
+//   // })
 //
 // })
