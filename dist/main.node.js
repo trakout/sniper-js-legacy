@@ -45398,14 +45398,14 @@ var Util = function () {
   }, {
     key: 'getOrderHash',
     value: function getOrderHash(order) {
-      var orderParts = [{ value: order.exchangeAddress, type: 'address' }, { value: order.maker, type: 'address' }, { value: order.taker, type: 'address' }, { value: this.bigNumberToBN(order.salt), type: 'uint256' }, { value: order.makerTokenAddress, type: 'address' }, { value: order.takerTokenAddress, type: 'address' }, {
-        value: this.bigNumberToBN(order.makerTokenAmount),
+      var orderParts = [{ value: order.exchangeAddress || order.dex, type: 'address' }, { value: order.maker || order.m, type: 'address' }, { value: order.taker || order.t, type: 'address' }, { value: this.bigNumberToBN(order.salt || order.s), type: 'uint256' }, { value: order.makerTokenAddress || order.ma, type: 'address' }, { value: order.takerTokenAddress || order.ta, type: 'address' }, {
+        value: this.bigNumberToBN(order.makerTokenAmount || order.mn),
         type: 'uint256'
       }, {
-        value: this.bigNumberToBN(order.takerTokenAmount),
+        value: this.bigNumberToBN(order.takerTokenAmount || order.tn),
         type: 'uint256'
       }, {
-        value: this.bigNumberToBN(order.expirationTimestampInSec),
+        value: this.bigNumberToBN(order.expirationTimestampInSec || order.exp),
         type: 'uint256'
       }];
       return _web.utils.soliditySha3.apply(_web.utils, orderParts);
@@ -45643,7 +45643,8 @@ var Assert = function () {
 
     /**
      * Validate and sanitize incoming order
-     * @param {object} o - complete order
+     * @param {object} order - complete order
+     * @param {object} transform - transform bignumbers
      * @return {Promise} order object || Error
      */
 
@@ -45676,11 +45677,12 @@ var Assert = function () {
         var quote = _Util2.default.getQuoteFromPair(o.p);
         var saltBn = transform ? o.s : new _bignumber.BigNumber(o.s);
         var expBn = transform ? o.exp : new _bignumber.BigNumber(o.exp);
-        var maxExp = new _bignumber.BigNumber(Date.now() + cfg.max_expiry * 1);
+        var maxExp = new _bignumber.BigNumber(Date.now() + cfg.max_expiry * 1000);
         var currentTime = new _bignumber.BigNumber(Date.now());
         var zeroBn = new _bignumber.BigNumber(0);
+        var hashCheck = _Util2.default.getOrderHash(o);
 
-        if (!o || !base || !(base === 'ETH' || base === 'EOS') || _Util2.default.getQuoteFromOrder(o) !== quote || !o.dex || !_web.utils.isAddress(o.dex) || o.dex !== cfg.addr.dex || !o.exp || transform && !_web.utils.isBigNumber(o.exp) || !transform && typeof o.exp !== 'string' || currentTime.gte(expBn) || !o.h || !_Util2.default.isHex(o.h) || !o.s || transform && !_web.utils.isBigNumber(o.s) || !transform && typeof o.s !== 'string' || saltBn.lte(zeroBn) || !o.sg || !o.sg.v || typeof o.sg.v !== 'number' || !o.sg.r || typeof o.sg.r !== 'string' || !_Util2.default.isHex(o.sg.r) || !o.sg.s || typeof o.sg.s !== 'string' || !_Util2.default.isHex(o.sg.s) || !o.m || !_web.utils.isAddress(o.m) || !o.ma || !_web.utils.isAddress(o.ma) || !o.mn || transform && !_web.utils.isBigNumber(o.mn) || !transform && typeof o.mn !== 'string' || transform && o.mn.lte(zeroBn) || !transform && new _bignumber.BigNumber(o.mn).lte(zeroBn) || !o.t || !_web.utils.isAddress(o.t) || !o.ta || !_web.utils.isAddress(o.ta) || !o.tn || transform && !_web.utils.isBigNumber(o.tn) || !transform && typeof o.tn !== 'string') {
+        if (!o || !base || !(base === 'ETH' || base === 'EOS') || _Util2.default.getQuoteFromOrder(o) !== quote || !o.dex || !_web.utils.isAddress(o.dex) || o.dex !== cfg.addr.dex || !o.exp || transform && !_web.utils.isBigNumber(o.exp) || !transform && typeof o.exp !== 'string' || currentTime.gte(expBn) || expBn.gt(maxExp) || !o.h || o.h != hashCheck || !_Util2.default.isHex(o.h) || !o.s || transform && !_web.utils.isBigNumber(o.s) || !transform && typeof o.s !== 'string' || saltBn.lte(zeroBn) || !o.sg || !o.sg.v || typeof o.sg.v !== 'number' || !o.sg.r || typeof o.sg.r !== 'string' || !_Util2.default.isHex(o.sg.r) || !o.sg.s || typeof o.sg.s !== 'string' || !_Util2.default.isHex(o.sg.s) || !o.m || !_web.utils.isAddress(o.m) || !o.ma || !_web.utils.isAddress(o.ma) || !o.mn || transform && !_web.utils.isBigNumber(o.mn) || !transform && typeof o.mn !== 'string' || transform && o.mn.lte(zeroBn) || !transform && new _bignumber.BigNumber(o.mn).lte(zeroBn) || !o.t || !_web.utils.isAddress(o.t) || !o.ta || !_web.utils.isAddress(o.ta) || !o.tn || transform && !_web.utils.isBigNumber(o.tn) || !transform && typeof o.tn !== 'string') {
           reject(new Error('Assert.sanitizeOrderIn: invalid order'));
         }
 
@@ -45708,9 +45710,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); // 'use strict'
-
-// import { abi as dexAbi } from '../../build/contracts/SniperExchange'
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _bignumber = __webpack_require__(56);
 
@@ -46258,10 +46258,11 @@ var Sniper = function () {
 // let snpr = new Sniper({
 //   provider: web3
 // })
-// // snpr.listenOrderBook('ETH:0x6089982faab51b5758974cf6a502d15ca300a4eb', onOrder)
+// snpr.listenOrderBook('ETH:0x6089982faab51b5758974cf6a502d15ca300a4eb', onOrder)
+
+
+// snpr.init().then(async () => {
 //
-//
-// snpr.init().then(() => {
 //
 //   // console.log('standalone verification test:')
 //   // console.log(snpr.verifySignature(
@@ -46269,25 +46270,25 @@ var Sniper = function () {
 //   //   '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1',
 //   //   {v: 28, r: '0xf7e34636dcb9a4b844e37bb28a998f96cb56a592fd508c738aee96a3222cba93', s: '0x6b8cf351dcfe6a9af1e9c6921b88af028421f2ebb09d87e9b86d6ad37785b7ae'}
 //   // ))
-//
-//   snpr.createOrderAsync(
-//     false,
-//     '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mAddr
-//     null, // tAddr
-//     '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mTokenAddr
-//     '0x6089982faab51b5758974cf6a502d15ca300a4eb', // tTokenAddr
-//     new BigNumber(1), // makerTokenAmt
-//     new BigNumber(1), // takerTokenAmt
-//     50000, // expiry length
-//     'ETH'
-//   ).then((order) => {
-//     // console.log(order)
-//     let hash = snpr.getOrderHash(order)
-//     console.log('verification test:', snpr.verifySignature(hash, order.maker, order.sig))
-//     return order
-//   }).then((order) => {
-//     snpr.submitOrderAsync(order)
-//   })
+//   //
+//   // snpr.createOrderAsync(
+//   //   false,
+//   //   '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mAddr
+//   //   null, // tAddr
+//   //   '0xfaBe65f11fE3EB25636333ca740A8C605494B9b1', // mTokenAddr
+//   //   '0x6089982faab51b5758974cf6a502d15ca300a4eb', // tTokenAddr
+//   //   new BigNumber(1), // makerTokenAmt
+//   //   new BigNumber(1), // takerTokenAmt
+//   //   5100000000, // expiry length
+//   //   'ETH'
+//   // ).then((order) => {
+//   //   // console.log(order)
+//   //   let hash = snpr.getOrderHash(order)
+//   //   console.log('verification test:', snpr.verifySignature(hash, order.maker, order.sig))
+//   //   return order
+//   // }).then((order) => {
+//   //   snpr.submitOrderAsync(order)
+//   // })
 //
 // })
 
